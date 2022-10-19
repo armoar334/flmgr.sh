@@ -191,7 +191,7 @@ HIGHLIGHT_CURR() {
 
 CUSTOM_CURRENT() {
 	printf '\e[H'
-	printf 'Run custom command on '"${FILES["$Current"]}"':'
+	printf 'Run custom command on '"${FILES["$Current"]}"': '
 	read COMMAND
 	$COMMAND "${FILES["$Current"]}"
 }

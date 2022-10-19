@@ -12,6 +12,14 @@ mv flmgr.sh ~/.local/bin/ # Or other appropriate location in your PATH
 ## Usage
 run ``flmgr.sh`` in a directory  
 
+### Keybinds
+Up    / k : Scroll up  
+Down  / j : Scroll down  
+Right / l : Open file / folder  
+Left  / h : Go up a directory  
+C/c       : Run a custom command on a file  
+
+
 ## Hacking
 Now time for the fun part! flmgr.sh is designed to be easily modified to fit your needs / wants.  
 
