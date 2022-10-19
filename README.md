@@ -13,13 +13,13 @@ mv flmgr.sh ~/.local/bin/ # Or other appropriate location in your PATH
 run ``flmgr.sh`` in a directory  
 
 ### Keybinds
-Up    / k : Scroll up  
-Down  / j : Scroll down  
-Right / l : Open file / folder  
-Left  / h : Go up a directory  
-C/c       : Run a custom command on a file  
-PgDn	  : Scroll up a page  
-PgUp	  : Scroll down a page  
+>Up    / k : Scroll up  
+>Down  / j : Scroll down  
+>Right / l : Open file / folder  
+>Left  / h : Go up a directory  
+>C/c       : Run a custom command on a file  
+>PgDn	  : Scroll up a page  
+>PgUp	  : Scroll down a page  
   
   
 
