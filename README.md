@@ -69,13 +69,14 @@ See the ``INPUT`` function
 It reads one character, and if that character is an escape character, read one more. This allows for not only regular character input, but also reading characters such as arrow keys.  
 To see what the character for a certain key is, press Ctrl-V and then the character. You will get one of three results:  
 
-#### ``[C`` Style  
+### ``[C`` Style  
 These are comprised of two parts:  
+(the  character may not render in your browser, for reference it is a single character that looks like a caret and a open square bracket: ^[)  
 A ````, which is a single character. This is the escape code, it is handled by the case statement. It is also the raw data from the ``Esc`` key, making it the only key that cannot be cased.  
 The two characters ``[C``, a square bracket and then a letter or number, this is cased by the main statement, and can be seen handling the arrow key input.
   
   
-#### ``D`` Style  
+### ``D`` Style  
 
 
 
