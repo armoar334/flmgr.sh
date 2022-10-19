@@ -12,5 +12,8 @@ mv flmgr.sh ~/.local/bin/ # Or other appropriate location in your PATH
 ## Usage
 run ``flmgr.sh`` in a directory  
 
-# Hacking
-Now
+## Hacking
+Now time for the fun part! flmgr.sh is designed to be easily modified to fit your needs / wants.  
+This section will cover  
+- Custom file opening by filetype
+- Custom coloring for certain file / folder names
