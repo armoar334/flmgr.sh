@@ -8,3 +8,9 @@ git clone https://github.com/armoar334/flmgr.sh.git
 cd flmgr.sh  
 mv flmgr.sh ~/.local/bin/ # Or other appropriate location in your PATH
 ```
+
+## Usage
+run ``flmgr.sh`` in a directory  
+
+# Hacking
+Now
