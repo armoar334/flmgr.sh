@@ -79,3 +79,10 @@ These characters are a single character, they represent keys that you would find
 - The main difficulty with these characters is that they cannot be copy-pasted in most, if not all, terminals. This is because despite being one character they are displayed across two cells. The only way I have found to put them into the script is to use ``echo``, like this (using Ctrl-V to type the character):  
 ``echo ^E >> flmgr.sh``  
 And then using Ctrl-K in nano to move the character to the case statement. Luckily these seem to be mostly used for Xinput commands, such as scroll wheel input, which in many terminal emulators will be intercepted by the terminal emulator itself.  
+  
+  
+You can use these cases to handle almost all possible keyboard input, and using pipes to match multiple cases (again, can be seen in the arrow key cases) add new keybinds to existing commands.
+  
+Much of the other information can be found in the comments throughout the code. If you need to make a major modification then you probably know more then I do!  
+Pull requests welcome, but im not a particularly active user or Github or Git at all, so you might be left waiting a little while.  
+Happy Hacking!  
