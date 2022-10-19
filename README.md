@@ -14,10 +14,6 @@ run ``flmgr.sh`` in a directory
 
 ## Hacking
 Now time for the fun part! flmgr.sh is designed to be easily modified to fit your needs / wants.  
-This section will cover  
-- Custom file opening by filetype
-- Custom coloring for certain file / folder names
-
 
 ### Custom file opening by filetype
 Open ``flmgr.sh`` in your favourite text editor  
