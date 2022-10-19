@@ -44,7 +44,8 @@ FILE_HANDLER() {
 }
 ```
 We will be adding our new file match between the lines beginning ``*script*|*text*)`` and ``*)``  
-Add a new line that starts ``*image*)``  
+Add a new line that starts  
+``*image*)``  
 After this, we will use our ``IMAGE_VIEWER`` variable to open matching files, like this:  
 ``*image*) $IMAGE_VIEWER``  
 After this, we must add the ``HANDLE`` variable. It must be surrounded by double quotes "" to ensure that the file is opened:  
