@@ -77,8 +77,11 @@ These are comprised of two parts:
   
   
 ### ``D`` Style  
-
-
-
-
- 
+These characters are a single character, they represent keys that you would find on a keyboard, such as letters, numbers and symbols. They can be cased directly as can be seen with hjkl and C in the main statement.  
+  
+  
+### ```` Style
+(Again, these may not render in your browser. They look like a caret and a letter: ``^E``)  
+- The main difficulty with these characters is that they cannot be copy-pasted in most, if not all, terminals. This is because despite being one character they are displayed across two cells. The only way I have found to put them into the script is to use ``echo``, like this (using Ctrl-V to type the character):  
+``echo ^E >> flmgr.sh``  
+And then using Ctrl-K in nano to move the character to the case statement. Luckily these seem to be mostly used for Xinput commands, such as scroll wheel input, which in many terminal emulators will be intercepted by the terminal emulator itself.  
