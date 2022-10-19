@@ -18,7 +18,10 @@ Down  / j : Scroll down
 Right / l : Open file / folder  
 Left  / h : Go up a directory  
 C/c       : Run a custom command on a file  
-
+PgDn	  : Scroll up a page  
+PgUp	  : Scroll down a page  
+  
+  
 
 ## Hacking
 Now time for the fun part! flmgr.sh is designed to be easily modified to fit your needs / wants.  
