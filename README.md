@@ -18,14 +18,14 @@ Now time for the fun part! flmgr.sh is designed to be easily modified to fit you
 ### Custom file opening by filetype
 Open ``flmgr.sh`` in your favourite text editor  
 At the top of the file you will see a function called ``FILE_HANDLER``. This is where the file matching occurs.  
-Lets run through adding a filetype to ''FILE_HANDLER``. For this example i will add a match for PNG images  
+Lets run through adding a filetype to `FILE_HANDLER``. For this example i will add a match for PNG images  
 Run ``file`` on a file of the desired filetype
 ```
 example@exampler $ file screenshot.png
 screenshot.png: PNG image data, 1920 x 1080, 8-bit/color RGB, non-interlaced
 ```
 ``file`` reports the data type of this file as ``PNG image data``, so lets add a new case statement to ``FILE_HANDLER`` to open files that match this with the image viewer ``feh``  
-Then, below the ``EDITOR`` variable, add another variable called ``IMAGE_VIEWER``, and set it to equal ``feh``
+First, below the ``EDITOR`` variable, add another variable called ``IMAGE_VIEWER``, and set it to equal ``feh``
 
 Now, in ``FILE_HANDLER`` you should see a section of code that looks like this:  
 ```
