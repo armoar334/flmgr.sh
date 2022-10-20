@@ -203,10 +203,11 @@ CUSTOM_CURRENT() {
 
 GET_TERM
 SETUP_TERM
+running=1
 LIST_GET
 LIST_DRAW 3 2 $Length 0
 BAR_DRAW
-while true;
+while [[ $running -eq 1 ]];
 do
 	INPUT
 done
