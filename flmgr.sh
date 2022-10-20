@@ -197,9 +197,6 @@ CUSTOM_CURRENT() {
 	$COMMAND "${FILES["$Current"]}"
 }
 
-
-
-
 GET_TERM
 SETUP_TERM
 running=1
