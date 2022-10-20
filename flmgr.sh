@@ -135,7 +135,7 @@ BAR_DRAW() {
 	Count=0
 	tput setaf 0 setab 7
 	printf "$BAR_VAR"
-	currdir=$(pwd | sed 's#.*/##')
+	currdir=${PWD/*\//}
 	printf '\e['$LINES';0H'"$PWD/${FILES["$Current"]}"
 	tput setaf 7 setab 0
 }
