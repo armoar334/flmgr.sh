@@ -11,6 +11,7 @@
 
 # Should ideally be in env, but isnt in a lot of distros
 EDITOR=nano
+# Other / Custom
 IMAGE_VIEWER=feh
 
 # This is where you can specify actions for each filetype, see README for help
@@ -107,7 +108,7 @@ LIST_DRAW() {
 
 	tput sgr0
 	printf '\e['$TOPY';'$TOPX'H'
-	Count=1
+	Count=0
 	while [[ $Count -lt $(( LINES - 2 )) ]];
 	do
 		printf '\e['$((TOPY + $Count))';'$TOPX'H\e[2K'
@@ -115,13 +116,11 @@ LIST_DRAW() {
 			'Desktop'|'Downloads'|'Pictures'|'Videos') printf "$f4${FILES[$((Count + Current))]}$reg" ;;
 			*) printf "${FILES[$((Count + Current))]}" ;;
 		esac
-		printf '\e[B'
 		Count=$((Count + 1))
 	done
+	printf '\e[H\e[2K'
 	printf '\e['$TOPY';'$TOPX'H\e[2K'
 	echo -n "$f0$b7${FILES[$Current]}$reg"
-	printf '\e[H\e[2K'
-	printf '\e['$(($TOPY + $Length))';0H'
 }
 
 LIST_GET() {
@@ -142,15 +141,16 @@ BAR_DRAW() {
 }
 
 UP_DIR() {
+	FROM_DIR=${PWD/*\//}
 	cd ../
 	clear
 	LIST_GET
+	HIGHLIGHT_CURR
 }
 
 
 
 INPUT() {
-	escape_char=$(printf "\u1b")
 	read -rsn1 mode
 	if [[ $mode == $escape_char ]];
 	then
@@ -162,7 +162,7 @@ INPUT() {
 		'[B'|'j'|'')	Current=$(($Current + 1)) && BAR_DRAW ;;			# down 1 item
 		'[C'|'l'|'')	FILE_HANDLER ;;							# Handle file options, such as opening, cd etc
 		'c'|'C')	CUSTOM_CURRENT ;;						# Run custom command on file, same as unknown filetype
-		'[D'|'h')	FROM_DIR=${PWD/*\//} && UP_DIR && HIGHLIGHT_CURR && BAR_DRAW ;;	# cd ../ and start at dir just exited
+		'[D'|'h')	UP_DIR && BAR_DRAW ;;	# cd ../ and start at dir just exited
 		'[6'|'J')	BAR_DRAW && Current=$(($Current + $(( LINES - 3 )) )) ;;	# PgDn
 		'[5'|'K')	BAR_DRAW && Current=$(($Current - $(( LINES - 3 )) )) ;;	# PgUp
 		'[4')		Current=$Length ;;						# End
@@ -172,22 +172,21 @@ INPUT() {
 	LIST_DRAW 3 2 $Length $Current
 }
 
-
+# Send an error
 ERROR() {
 	ERRORMSG=$1
 	printf '\e['$LINES';'$(($COLUMNS - ${#ERRORMSG} + 1))'H'
 	echo -n "$f7$b1$ERRORMSG$reg"
 }
 
+# Highlight the current folder before moving up a directory
 HIGHLIGHT_CURR() {
 	Count=0
+	# This is flawed as if the folder is deleted before exiting in flmgr, it will loop infinitly. This is on my list but idk how to do it while keeping it snappy
 	until [[ "$FROM_DIR" == "${FILES["$Count"]}" ]]
 	do
-		echo -n "${FILES["$Count"]}"
-		echo "$FROM_DIR"
 		Count=$(( Count + 1 ))
 	done
-	echo $Count
 	Current=$Count
 }
 
@@ -204,6 +203,7 @@ CUSTOM_CURRENT() {
 GET_TERM
 SETUP_TERM
 running=1
+escape_char=$(printf "\u1b")
 LIST_GET
 LIST_DRAW 3 2 $Length 0
 BAR_DRAW

@@ -17,9 +17,11 @@ run ``flmgr.sh`` in a directory
 >Down  / j : Scroll down  
 >Right / l : Open file / folder  
 >Left  / h : Go up a directory  
->C/c       : Run a custom command on a file  
->PgDn	  : Scroll up a page  
->PgUp	  : Scroll down a page  
+>C/c  : Run a custom command on a file  
+>PgDn : Scroll up a page  
+>PgUp : Scroll down a page  
+>Home : Go to first file in folder
+>End : Go to last file in folder
   
   
 
