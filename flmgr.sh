@@ -23,6 +23,7 @@ FILE_HANDLER() {
 		*image*) $IMAGE_VIEWER "$HANDLE" ;;
 		*) ERROR 'Dont know how to handle file:'"$PWD/$HANDLE" && CUSTOM_CURRENT ;;
 	esac
+	BAR_DRAW
 }
 
 #
@@ -47,8 +48,7 @@ done
 # Programmatically allocate background colors
 for code in {0..7}
 do
-#	declare b$code=$(tput setab $code)
-	declare b$code=$(tput setab 7)
+	declare b$code=$(tput setab $code)
 done
 
 # restore terminal
@@ -160,14 +160,14 @@ INPUT() {
 	case $mode in
 		'[A'|'k'|'')	Current=$(($Current - 1)) && BAR_DRAW ;;			# up 1 item
 		'[B'|'j'|'')	Current=$(($Current + 1)) && BAR_DRAW ;;			# down 1 item
-		'[C'|'l')	FILE_HANDLER ;;							# Handle file options, such as opening, cd etc
+		'[C'|'l'|'')	FILE_HANDLER ;;							# Handle file options, such as opening, cd etc
 		'c'|'C')	CUSTOM_CURRENT ;;						# Run custom command on file, same as unknown filetype
 		'[D'|'h')	FROM_DIR=${PWD/*\//} && UP_DIR && HIGHLIGHT_CURR && BAR_DRAW ;;	# cd ../ and start at dir just exited
 		'[6'|'J')	BAR_DRAW && Current=$(($Current + $(( LINES - 3 )) )) ;;	# PgDn
 		'[5'|'K')	BAR_DRAW && Current=$(($Current - $(( LINES - 3 )) )) ;;	# PgUp
 		'[4')		Current=$Length ;;						# End
 		'[H')		Current=0 ;;							# Home
-		'q'|'Q'|'') RESTORE_TERM ;;							# clean exit
+		'q'|'Q') RESTORE_TERM ;;							# clean exit
 	esac
 	LIST_DRAW 3 2 $Length $Current
 }
