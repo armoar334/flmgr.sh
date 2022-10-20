@@ -47,14 +47,20 @@ done
 # Programmatically allocate background colors
 for code in {0..7}
 do
-	declare b$code=$(tput setab $code)
+#	declare b$code=$(tput setab $code)
+	declare b$code=$(tput setab 7)
 done
 
 # restore terminal
-reg=$(printf '\e[0m')
+reg=$(tput sgr0)
 
 GET_TERM(){
 	read -r LINES COLUMNS < <(stty size)
+	BAR_VAR=""
+	for num in $(seq 1 $COLUMNS)
+	do
+		BAR_VAR=$(printf "$BAR_VAR ")
+	done
 }
 
 SETUP_TERM() {
@@ -99,21 +105,22 @@ LIST_DRAW() {
 		Current=0
 	fi
 
-	printf '\e[H\e[2K'	# This needs to be seperate for some reason, doesnt clear properly otherwise
+	tput sgr0
 	printf '\e['$TOPY';'$TOPX'H'
 	Count=1
 	while [[ $Count -lt $(( LINES - 2 )) ]];
 	do
 		printf '\e['$((TOPY + $Count))';'$TOPX'H\e[2K'
-		case "${FILES[$((Count + Current))]}" in
+		case "${FILES[$(($Count + $Current))]}" in
 			'Desktop'|'Downloads'|'Pictures'|'Videos') printf "$f4${FILES[$((Count + Current))]}$reg" ;;
 			*) printf "${FILES[$((Count + Current))]}" ;;
 		esac
-		Count=$((Count + 1))
 		printf '\e[B'
+		Count=$((Count + 1))
 	done
 	printf '\e['$TOPY';'$TOPX'H\e[2K'
 	echo -n "$f0$b7${FILES[$Current]}$reg"
+	printf '\e[H\e[2K'
 	printf '\e['$(($TOPY + $Length))';0H'
 }
 
@@ -122,19 +129,13 @@ LIST_GET() {
 	FILES+=(*)
 	Length=${#FILES[@]}
 	Current=0
-	BAR_DRAW
-	LIST_DRAW 3 2 $Length $Current
 }
 
 BAR_DRAW() {
 	printf '\e['$LINES';0H'
 	Count=0
 	tput setaf 0 setab 7
-	while [[ $Count -le $((COLUMNS - 1 )) ]];
-	do
-		printf " "
-		Count=$((Count + 1))
-	done
+	printf "$BAR_VAR"
 	currdir=$(pwd | sed 's#.*/##')
 	printf '\e['$LINES';0H'"$PWD/${FILES["$Current"]}"
 	tput setaf 7 setab 0
@@ -155,12 +156,13 @@ INPUT() {
 	then
 		read -rsn2 mode
 	fi
+#	clear
 	case $mode in
 		'[A'|'k'|'')	Current=$(($Current - 1)) && BAR_DRAW ;;			# up 1 item
 		'[B'|'j'|'')	Current=$(($Current + 1)) && BAR_DRAW ;;			# down 1 item
 		'[C'|'l')	FILE_HANDLER ;;							# Handle file options, such as opening, cd etc
 		'c'|'C')	CUSTOM_CURRENT ;;						# Run custom command on file, same as unknown filetype
-		'[D'|'h')	FROM_DIR=${PWD/*\//} && UP_DIR && HIGHLIGHT_CURR ;;		# cd ../ and start at dir just exited
+		'[D'|'h')	FROM_DIR=${PWD/*\//} && UP_DIR && HIGHLIGHT_CURR && BAR_DRAW ;;	# cd ../ and start at dir just exited
 		'[6'|'J')	BAR_DRAW && Current=$(($Current + $(( LINES - 3 )) )) ;;	# PgDn
 		'[5'|'K')	BAR_DRAW && Current=$(($Current - $(( LINES - 3 )) )) ;;	# PgUp
 		'[4')		Current=$Length ;;						# End
@@ -202,6 +204,8 @@ CUSTOM_CURRENT() {
 GET_TERM
 SETUP_TERM
 LIST_GET
+LIST_DRAW 3 2 $Length 0
+BAR_DRAW
 while true;
 do
 	INPUT
