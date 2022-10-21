@@ -21,7 +21,7 @@ FILE_HANDLER() {
 	FILETYPE=$(file "${FILES[$Current]}")
 	case $FILETYPE in
 		*directory*) cd $HANDLE && clear && LIST_GET ;;
-		*script*|*text*) $EDITOR "$HANDLE" ;;
+		*script*|*text*|*.md*) $EDITOR "$HANDLE" ;;
 		*image*) $IMAGE_VIEWER "$HANDLE" ;;
 		*) ERROR 'Dont know how to handle file:'"$PWD/$HANDLE" && CUSTOM_CURRENT ;;
 	esac
@@ -38,23 +38,15 @@ trap 'echo flmgr exited' EXIT
 
 trap 'GET_TERM && BAR_DRAW' WINCH
 
+# Programmatically define terminal colors, saves a few lines
 
-
-# Programmatically allocate foreground colors
-# This is show-offy and less customisable, but it takes the line count by like 5 so its all good
 for code in {0..7}
 do
-	declare f$code=$(tput setaf $code)
+	declare f$code=$(printf '\e[3'$code'm')
+	declare b$code=$(printf '\e[4'$code'm')
 done
 
-# Programmatically allocate background colors
-for code in {0..7}
-do
-	declare b$code=$(tput setab $code)
-done
-
-# restore terminal
-reg=$(tput sgr0)
+reg=$(printf '\e[0m')
 
 GET_TERM(){
 	read -r LINES COLUMNS < <(stty size)
@@ -114,6 +106,7 @@ LIST_DRAW() {
 	do
 		printf '\e['$((TOPY + $Count))';'$TOPX'H\e[2K'
 		case "${FILES[$(($Count + $Current))]}" in
+			.*) printf "$f3${FILES[$(($Count + Current))]}$reg" ;;
 			'Desktop'|'Downloads'|'Pictures'|'Videos') printf "$f4${FILES[$((Count + Current))]}$reg" ;;
 			*) printf "${FILES[$((Count + Current))]}" ;;
 		esac
@@ -121,7 +114,7 @@ LIST_DRAW() {
 	done
 	printf '\e[H\e[2K'
 	printf '\e['$TOPY';'$TOPX'H\e[2K'
-	echo -n "$f0$b7${FILES[$Current]}$reg"
+	printf "$f0$b7${FILES[$Current]}"
 }
 
 LIST_GET() {
@@ -142,12 +135,12 @@ LIST_GET() {
 BAR_DRAW() {
 	printf '\e['$LINES';0H'
 	Count=0
-	tput setaf 0 setab 7
+	printf "$f0$b7"
 	printf "$BAR_VAR"
 	currdir=${PWD/*\//}
 	printf '\e['$LINES';0H'"($(( Current + 1 ))/$Length) $PWD/${FILES["$Current"]}"
 	# The $(( $Current + 1 )) is because arrays are 0 indexed
-	tput setaf 7 setab 0
+	printf "$reg"
 }
 
 UP_DIR() {

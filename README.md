@@ -1,6 +1,6 @@
 # flmgr.sh
 ## a fast, hackable file manager written in bash
-flmgr.sh is a small, fast and most importantly modular file manager / browser, written with a dependency on only bash and coreutils  
+flmgr.sh is a small, fast and most importantly modular file manager / browser, written with in bash
 
 ## Installing
 ```
