@@ -99,7 +99,7 @@ LIST_DRAW() {
 		Current=0
 	fi
 
-	tput sgr0
+	printf '\e[0m'
 	printf '\e['$TOPY';'$TOPX'H'
 	Count=0
 	while [[ $Count -lt $(( LINES - 2 )) ]];
