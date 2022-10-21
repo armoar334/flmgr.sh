@@ -10,7 +10,11 @@
 #
 
 # Should ideally be in env, but isnt in a lot of distros
-EDITOR=nano
+if [[ -z "$EDITOR" ]];
+then
+	EDITOR=nano
+fi
+
 # Other / Custom
 IMAGE_VIEWER=feh
 SHOWHIDDEN="true"
@@ -19,12 +23,17 @@ SHOWHIDDEN="true"
 FILE_HANDLER() {
 	HANDLE="${FILES[$Current]}"
 	FILETYPE=$(file "${FILES[$Current]}")
-	case $FILETYPE in
-		*directory*) cd $HANDLE && clear && LIST_GET ;;
-		*script*|*text*|*.md*) $EDITOR "$HANDLE" ;;
-		*image*) $IMAGE_VIEWER "$HANDLE" ;;
-		*) ERROR 'Dont know how to handle file:'"$PWD/$HANDLE" && CUSTOM_CURRENT ;;
-	esac
+	if [[ -e "$HANDLE" ]];
+	then
+		case $FILETYPE in
+			*directory*) cd $HANDLE && clear && LIST_GET ;;
+			*script*|*text*|*.md*) $EDITOR "$HANDLE" ;;
+			*image*) $IMAGE_VIEWER "$HANDLE" ;;
+			*) ERROR 'Dont know how to handle file:'"$PWD/$HANDLE" && CUSTOM_CURRENT ;;
+		esac
+	else
+		ERROR "File $HANDLE does not exist!"
+	fi
 	BAR_DRAW
 }
 
@@ -163,15 +172,15 @@ INPUT() {
 	case $mode in
 		'[A'|'k'|'')	Current=$(($Current - 1)) ;;			# up 1 item
 		'[B'|'j'|'')	Current=$(($Current + 1)) ;;			# down 1 item
-		'[C'|'l'|'')	FILE_HANDLER ;;							# Handle file options, such as opening, cd etc
-		'c'|'C')	CUSTOM_CURRENT ;;						# Run custom command on file, same as unknown filetype
-		'[D'|'h')	UP_DIR && BAR_DRAW ;;	# cd ../ and start at dir just exited
+		'[C'|'l'|'')	FILE_HANDLER ;;					# Handle file options, such as opening, cd etc
+		'c'|'C')	CUSTOM_CURRENT ;;				# Run custom command on file, same as unknown filetype
+		'[D'|'h')	UP_DIR && BAR_DRAW ;;				# cd ../ and start at dir just exited
 		'[6'|'J')	Current=$(($Current + $(( LINES - 3 )) )) ;;	# PgDn
 		'[5'|'K')	Current=$(($Current - $(( LINES - 3 )) )) ;;	# PgUp
-		'[4'|'[F')	Current=$Length ;;						# End
-		'[H')		Current=0 ;;							# Home
+		'[4'|'[F')	Current=$Length ;;				# End
+		'[H')		Current=0 ;;					# Home
 		# These last 4 seem to vary with the keymap, so they may be unreliable. easy to fix locally, but hard to make "just work"
-		'q'|'Q') RESTORE_TERM ;;							# clean exit
+		'q'|'Q') RESTORE_TERM ;;					# clean exit
 	esac
 	LIST_DRAW 3 2 $Length $Current
 	BAR_DRAW
@@ -181,18 +190,21 @@ INPUT() {
 ERROR() {
 	ERRORMSG=$1
 	printf '\e['$LINES';'$(($COLUMNS - ${#ERRORMSG} + 1))'H'
-	echo -n "$f7$b1$ERRORMSG$reg"
+	printf "$f0$b1$ERRORMSG$reg"
 }
 
 # Highlight the current folder before moving up a directory
 HIGHLIGHT_CURR() {
 	Count=0
-	# This is flawed as if the folder is deleted before exiting in flmgr, it will loop infinitly. This is on my list but idk how to do it while keeping it snappy
-	until [[ "$FROM_DIR" == "${FILES["$Count"]}" ]]
+	while [[ $Count -le ${#FILES[@]} ]];
 	do
+		if [[ "$FROM_DIR" == "${FILES["$Count"]}" ]];
+		then
+			Current=$Count
+		fi
+		echo "${FILES["$Count"]} $Count"
 		Count=$(( Count + 1 ))
 	done
-	Current=$Count
 }
 
 CUSTOM_CURRENT() {
