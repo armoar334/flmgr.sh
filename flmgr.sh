@@ -165,7 +165,7 @@ INPUT() {
 		'[D'|'h')	UP_DIR && BAR_DRAW ;;	# cd ../ and start at dir just exited
 		'[6'|'J')	BAR_DRAW && Current=$(($Current + $(( LINES - 3 )) )) ;;	# PgDn
 		'[5'|'K')	BAR_DRAW && Current=$(($Current - $(( LINES - 3 )) )) ;;	# PgUp
-		'[4')		Current=$Length ;;						# End
+		'[4'|'[F')	Current=$Length ;;						# End
 		'[H')		Current=0 ;;							# Home
 		'q'|'Q') RESTORE_TERM ;;							# clean exit
 	esac
