@@ -13,6 +13,7 @@
 EDITOR=nano
 # Other / Custom
 IMAGE_VIEWER=feh
+SHOWHIDDEN="true"
 
 # This is where you can specify actions for each filetype, see README for help
 FILE_HANDLER() {
@@ -35,7 +36,7 @@ trap 'RESTORE_TERM' INT TERM
 
 trap 'echo flmgr exited' EXIT
 
-trap 'GET_TERM' WINCH
+trap 'GET_TERM && BAR_DRAW' WINCH
 
 
 
@@ -99,7 +100,7 @@ LIST_DRAW() {
 #Current sanitization
 	if [[ $Current -ge $Length ]];
 	then
-		Current=$(($Length - 1))
+		Current=$(( $Length - 1 ))
 	fi
 	if [[ $Current -le 0 ]];
 	then
@@ -125,7 +126,15 @@ LIST_DRAW() {
 
 LIST_GET() {
 	FILES=()
-	FILES+=(*)
+	# This needs to be more customisable, as atm it wont ever show hidden files and stuff
+	if [[ "$SHOWHIDDEN" == "true" ]];
+	then
+		shopt -s dotglob
+		FILES+=(*)
+		shopt -u dotglob
+	else
+		FILES+=(*)
+	fi
 	Length=${#FILES[@]}
 	Current=0
 }
@@ -136,7 +145,8 @@ BAR_DRAW() {
 	tput setaf 0 setab 7
 	printf "$BAR_VAR"
 	currdir=${PWD/*\//}
-	printf '\e['$LINES';0H'"$PWD/${FILES["$Current"]}"
+	printf '\e['$LINES';0H'"($(( Current + 1 ))/$Length) $PWD/${FILES["$Current"]}"
+	# The $(( $Current + 1 )) is because arrays are 0 indexed
 	tput setaf 7 setab 0
 }
 
@@ -158,18 +168,20 @@ INPUT() {
 	fi
 #	clear
 	case $mode in
-		'[A'|'k'|'')	Current=$(($Current - 1)) && BAR_DRAW ;;			# up 1 item
-		'[B'|'j'|'')	Current=$(($Current + 1)) && BAR_DRAW ;;			# down 1 item
+		'[A'|'k'|'')	Current=$(($Current - 1)) ;;			# up 1 item
+		'[B'|'j'|'')	Current=$(($Current + 1)) ;;			# down 1 item
 		'[C'|'l'|'')	FILE_HANDLER ;;							# Handle file options, such as opening, cd etc
 		'c'|'C')	CUSTOM_CURRENT ;;						# Run custom command on file, same as unknown filetype
 		'[D'|'h')	UP_DIR && BAR_DRAW ;;	# cd ../ and start at dir just exited
-		'[6'|'J')	BAR_DRAW && Current=$(($Current + $(( LINES - 3 )) )) ;;	# PgDn
-		'[5'|'K')	BAR_DRAW && Current=$(($Current - $(( LINES - 3 )) )) ;;	# PgUp
+		'[6'|'J')	Current=$(($Current + $(( LINES - 3 )) )) ;;	# PgDn
+		'[5'|'K')	Current=$(($Current - $(( LINES - 3 )) )) ;;	# PgUp
 		'[4'|'[F')	Current=$Length ;;						# End
 		'[H')		Current=0 ;;							# Home
+		# These last 4 seem to vary with the keymap, so they may be unreliable. easy to fix locally, but hard to make "just work"
 		'q'|'Q') RESTORE_TERM ;;							# clean exit
 	esac
 	LIST_DRAW 3 2 $Length $Current
+	BAR_DRAW
 }
 
 # Send an error
