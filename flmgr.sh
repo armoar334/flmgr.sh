@@ -113,7 +113,6 @@ LIST_DRAW() {
 	while [[ $Count -lt $(( LINES - 2 )) ]];
 	do
 		the_file="${FILES[$(($Count + $Current))]}"
-#		the_filetype=$(file "$the_file")
 		printf '\e['$((TOPY + $Count))';'$TOPX'H\e[2K'
 		case "$the_file" in
 			*document*|*text*) printf "$f2$b0$the_file$reg" ;;
@@ -128,15 +127,22 @@ LIST_DRAW() {
 	printf "$f0$b7${FILES[$Current]}"
 }
 
+# This is so i dont have to change every occurence of "ls -AF" and things each time i change something
+LS_FUNC() {
+if [[ "$SHOWHIDDEN" == "true" ]];
+then
+	# The sed statemnet removes the * from the end of filenames of scripts
+	ls -AF | sed 's/*$//g'
+else
+	ls -F | sed 's/*$//g'
+fi
+}
+
+
 LIST_GET() {
 	FILES=()
 	# This is difficult to customise bc of HIGHLIGHT_CURR
-	if [[ "$SHOWHIDDEN" == "true" ]];
-	then
-		readarray -t FILES < <(ls -AF)
-	else
-		readarray -t FILES < <(ls -F)
-	fi
+	readarray -t FILES < <(LS_FUNC)
 	Length=${#FILES[@]}
 	Current=0
 }
@@ -225,15 +231,8 @@ SEARCH_FILES(){
 			[*) ;;
 			*) search_term="$search_term$one_char" ;;
 		esac
-		FILES=()
-		if [[ "$SHOWHIDDEN" == "true" ]];
-		then
-			readarray -t FILES < <(ls -AF | grep "$search_term")
-		else
-			readarray -t FILES < <(ls -F | grep "$search_term")
-		fi
+		readarray -t FILES < <(LS_FUNC | grep "$search_term")
 		Length=${#FILES[@]}
-		clear
 		LIST_DRAW 3 2 $Length 0
 		BAR_DRAW
 	done
