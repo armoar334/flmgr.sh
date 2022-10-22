@@ -90,8 +90,6 @@ LIST_DRAW() {
 	TOPY=$2
 	Length=$3
 	Current=$4
-	OLDIFS="$IFS"
-	IFS=''
 	printf '\e[?25l'
 #Length sanitization
 	if [[ $Length -ge ${#FILES[@]} ]];
@@ -128,7 +126,6 @@ LIST_DRAW() {
 	printf '\e[H\e[2K'
 	printf '\e['$TOPY';'$TOPX'H\e[2K'
 	printf "$f0$b7${FILES[$Current]}"
-	IFS="$OLDIFS"
 }
 
 LIST_GET() {
