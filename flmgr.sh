@@ -114,12 +114,7 @@ LIST_DRAW() {
 	do
 		the_file="${FILES[$(($Count + $Current))]}"
 		printf '\e['$((TOPY + $Count))';'$TOPX'H\e[2K'
-		case "$the_file" in
-			*document*|*text*) printf "$f2$b0$the_file$reg" ;;
-			.*) printf "$f3$the_file$reg" ;;
-			*/*) printf "$f4$the_file$reg" ;;
-			*) printf "$the_file" ;;
-		esac
+		LIST_HIGH "$the_file"
 		Count=$((Count + 1))
 	done
 	printf '\e[H\e[2K'
@@ -173,8 +168,6 @@ UP_DIR() {
 	LIST_GET
 	HIGHLIGHT_CURR
 }
-
-
 
 INPUT() {
 	read -rsn1 mode
@@ -259,18 +252,20 @@ DRAW_SUBD() {
 	while [[ $Count -le $(( $LINES - 3 )) ]];
 	do
 		sub_temp="${SUB_FILES["$Count"]}"
-		case "$sub_temp" in
-			*document*|*text*) printf "$f2$b0$sub_temp$reg" ;;
-			.*) printf "$f3$sub_temp$reg" ;;
-			*/*) printf "$f4$sub_temp$reg" ;;
-			*) printf "$sub_temp" ;;
-		esac
+		LIST_HIGH "$sub_temp"
 		printf "\e[${#SUB_FILES["$Count"]}D\e[B"
 		Count=$(( $Count + 1 ))
 	done
 }
 
-
+LIST_HIGH() {
+	case "$1" in
+		*document*|*text*) printf "$f2$b0$1$reg" ;;
+		.*) printf "$f3$1$reg" ;;
+		*/*) printf "$f4$1$reg" ;;
+		*) printf "$1" ;;
+	esac
+}
 
 CUSTOM_CURRENT() {
 	printf '\e[H'
