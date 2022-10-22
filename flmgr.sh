@@ -119,7 +119,7 @@ LIST_DRAW() {
 	done
 	printf '\e[H\e[2K'
 	printf '\e['$TOPY';'$TOPX'H\e[2K'
-	printf "$f0$b7${FILES[$Current]}"
+	printf "$f0$b7${FILES[$Current]}%-*s " "$(( $(( $COLUMNS / 2 )) - 5 - ${#FILES[$Current]} ))"
 }
 
 # This is so i dont have to change every occurence of "ls -AF" and things each time i change something
@@ -256,6 +256,8 @@ DRAW_SUBD() {
 		printf "\e[${#SUB_FILES["$Count"]}D\e[B"
 		Count=$(( $Count + 1 ))
 	done
+#	printf "\e[2;"$(( $COLUMNS / 2 ))"H"
+#	printf "$f0$b7${SUB_FILES[0]}%-*s" "$(( $(( $COLUMNS / 2 )) - 4 - ${#SUB_FILES[0]} ))"
 }
 
 LIST_HIGH() {
