@@ -73,7 +73,6 @@ SETUP_TERM() {
 	printf '\e[2J\e[H'
 	# Hide cursor
 	printf '\e[?25l'
-	#Get length
 }
 
 RESTORE_TERM() {
@@ -91,6 +90,8 @@ LIST_DRAW() {
 	TOPY=$2
 	Length=$3
 	Current=$4
+	OLDIFS="$IFS"
+	IFS=''
 	printf '\e[?25l'
 #Length sanitization
 	if [[ $Length -ge ${#FILES[@]} ]];
@@ -113,18 +114,21 @@ LIST_DRAW() {
 	Count=0
 	while [[ $Count -lt $(( LINES - 2 )) ]];
 	do
+		the_file="${FILES[$(($Count + $Current))]}"
+#		the_filetype=$(file "$the_file")
 		printf '\e['$((TOPY + $Count))';'$TOPX'H\e[2K'
-		case "${FILES[$(($Count + $Current))]}" in
-			*document*|*text*) printf "$f2$b0${FILES[$(($Count + Current))]}$reg" ;;
-			.*) printf "$f3${FILES[$(($Count + Current))]}$reg" ;;
-			*/*) printf "$f4${FILES[$((Count + Current))]}$reg" ;;
-			*) printf "${FILES[$((Count + Current))]}" ;;
+		case "$the_file" in
+			*document*|*text*) printf "$f2$b0$the_file$reg" ;;
+			.*) printf "$f3$the_file$reg" ;;
+			*/*) printf "$f4$the_file$reg" ;;
+			*) printf "$the_file" ;;
 		esac
 		Count=$((Count + 1))
 	done
 	printf '\e[H\e[2K'
 	printf '\e['$TOPY';'$TOPX'H\e[2K'
 	printf "$f0$b7${FILES[$Current]}"
+	IFS="$OLDIFS"
 }
 
 LIST_GET() {
@@ -132,9 +136,9 @@ LIST_GET() {
 	# This is difficult to customise bc of HIGHLIGHT_CURR
 	if [[ "$SHOWHIDDEN" == "true" ]];
 	then
-		FILES+=($(ls -AF))
+		readarray -t FILES < <(ls -AF)
 	else
-		FILES+=($(ls -F))
+		readarray -t FILES < <(ls -F)
 	fi
 	Length=${#FILES[@]}
 	Current=0
@@ -227,9 +231,9 @@ SEARCH_FILES(){
 		FILES=()
 		if [[ "$SHOWHIDDEN" == "true" ]];
 		then
-			FILES+=($(ls -AF | grep "$search_term"))
+			readarray -t FILES < <(ls -AF | grep "$search_term")
 		else
-			FILES+=($(ls -F | grep "$search_term"))
+			readarray -t FILES < <(ls -F | grep "$search_term")
 		fi
 		Length=${#FILES[@]}
 		clear
