@@ -161,7 +161,7 @@ BAR_DRAW() {
 	printf "$f0$b7"
 	printf "$BAR_VAR"
 	currdir=${PWD/*\//}
-	printf '\e['$LINES';0H'"($(( Current + 1 ))/$Length) $PWD/${FILES["$Current"]} $Longest"
+	printf '\e['$LINES';0H'"($(( Current + 1 ))/$Length) $PWD/${FILES["$Current"]}"
 	# The $(( $Current + 1 )) is because arrays are 0 indexed
 	printf "$reg"
 }
