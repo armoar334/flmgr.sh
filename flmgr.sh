@@ -143,6 +143,14 @@ LIST_GET() {
 	FILES=()
 	# This is difficult to customise bc of HIGHLIGHT_CURR
 	readarray -t FILES < <(LS_FUNC)
+	Longest=0
+	for num in ${FILES[@]}
+	do
+		if [ ${#num} -gt $Longest ]
+		then
+			Longest=${#num}
+		fi
+	done
 	Length=${#FILES[@]}
 	Current=0
 }
@@ -153,7 +161,7 @@ BAR_DRAW() {
 	printf "$f0$b7"
 	printf "$BAR_VAR"
 	currdir=${PWD/*\//}
-	printf '\e['$LINES';0H'"($(( Current + 1 ))/$Length) $PWD/${FILES["$Current"]}"
+	printf '\e['$LINES';0H'"($(( Current + 1 ))/$Length) $PWD/${FILES["$Current"]} $Longest"
 	# The $(( $Current + 1 )) is because arrays are 0 indexed
 	printf "$reg"
 }
@@ -191,6 +199,10 @@ INPUT() {
 	esac
 	LIST_DRAW 3 2 $Length $Current
 	BAR_DRAW
+	case "${FILES[$Current]}" in
+		*/*) DRAW_SUBD ;;
+		*) ;;
+	esac
 }
 
 # Send an error
@@ -237,6 +249,28 @@ SEARCH_FILES(){
 		BAR_DRAW
 	done
 }
+
+DRAW_SUBD() {
+	cd "${FILES[$Current]}"
+	readarray -t SUB_FILES < <(LS_FUNC)
+	cd ../
+	printf "\e[2;"$(( $COLUMNS / 2 ))"H"
+	Count=0
+	while [[ $Count -le $(( $LINES - 3 )) ]];
+	do
+		sub_temp="${SUB_FILES["$Count"]}"
+		case "$sub_temp" in
+			*document*|*text*) printf "$f2$b0$sub_temp$reg" ;;
+			.*) printf "$f3$sub_temp$reg" ;;
+			*/*) printf "$f4$sub_temp$reg" ;;
+			*) printf "$sub_temp" ;;
+		esac
+		printf "\e[${#SUB_FILES["$Count"]}D\e[B"
+		Count=$(( $Count + 1 ))
+	done
+}
+
+
 
 CUSTOM_CURRENT() {
 	printf '\e[H'
