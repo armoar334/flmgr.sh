@@ -115,8 +115,9 @@ LIST_DRAW() {
 	do
 		printf '\e['$((TOPY + $Count))';'$TOPX'H\e[2K'
 		case "${FILES[$(($Count + $Current))]}" in
+			*document*|*text*) printf "$f2$b0${FILES[$(($Count + Current))]}$reg" ;;
 			.*) printf "$f3${FILES[$(($Count + Current))]}$reg" ;;
-			'Desktop'|'Downloads'|'Pictures'|'Videos') printf "$f4${FILES[$((Count + Current))]}$reg" ;;
+			*/*) printf "$f4${FILES[$((Count + Current))]}$reg" ;;
 			*) printf "${FILES[$((Count + Current))]}" ;;
 		esac
 		Count=$((Count + 1))
@@ -128,14 +129,12 @@ LIST_DRAW() {
 
 LIST_GET() {
 	FILES=()
-	# This needs to be more customisable, as atm it wont ever show hidden files and stuff
+	# This is difficult to customise bc of HIGHLIGHT_CURR
 	if [[ "$SHOWHIDDEN" == "true" ]];
 	then
-		shopt -s dotglob
-		FILES+=(*)
-		shopt -u dotglob
+		FILES+=($(ls -AF))
 	else
-		FILES+=(*)
+		FILES+=($(ls -F))
 	fi
 	Length=${#FILES[@]}
 	Current=0
@@ -153,7 +152,7 @@ BAR_DRAW() {
 }
 
 UP_DIR() {
-	FROM_DIR=${PWD/*\//}
+	FROM_DIR="${PWD/*\/}/"
 	cd ../
 	clear
 	LIST_GET
@@ -180,6 +179,7 @@ INPUT() {
 		'[4'|'[F')	Current=$Length ;;				# End
 		'[H')		Current=0 ;;					# Home
 		# These last 4 seem to vary with the keymap, so they may be unreliable. easy to fix locally, but hard to make "just work"
+		'/') SEARCH_FILES ;;						# Search for files within directory
 		'q'|'Q') RESTORE_TERM ;;					# clean exit
 	esac
 	LIST_DRAW 3 2 $Length $Current
@@ -204,6 +204,37 @@ HIGHLIGHT_CURR() {
 		fi
 		echo "${FILES["$Count"]} $Count"
 		Count=$(( Count + 1 ))
+	done
+}
+
+SEARCH_FILES(){
+	searching=1
+	search_term=''
+	while [[ searching -eq 1 ]];
+	do
+		printf "\e[H$reg\e[2KSearch for: $search_term"
+		read -rsn1 one_char
+		if [[ $one_char == $escape_char ]];
+		then
+			read -rsn2 one_char
+		fi
+		case $one_char in
+			''|'[A'|'[B') searching=0 ;;
+			''|'[P') if [[ ${#search_term} -ge 1 ]]; then search_term=${search_term::-1}; fi ;;
+			[*) ;;
+			*) search_term="$search_term$one_char" ;;
+		esac
+		FILES=()
+		if [[ "$SHOWHIDDEN" == "true" ]];
+		then
+			FILES+=($(ls -AF | grep "$search_term"))
+		else
+			FILES+=($(ls -F | grep "$search_term"))
+		fi
+		Length=${#FILES[@]}
+		clear
+		LIST_DRAW 3 2 $Length 0
+		BAR_DRAW
 	done
 }
 
