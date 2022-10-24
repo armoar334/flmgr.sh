@@ -28,7 +28,7 @@ FILE_HANDLER() {
 		case $FILETYPE in
 			*directory*) cd $HANDLE && clear && LIST_GET ;;
 			*script*|*text*|*.md*) $EDITOR "$HANDLE" ;;
-			*image*) $IMAGE_VIEWER "$HANDLE" ;;
+			*image*|*bitmap*) $IMAGE_VIEWER "$HANDLE" ;;
 			*) ERROR 'Dont know how to handle file:'"$PWD/$HANDLE" && CUSTOM_CURRENT ;;
 		esac
 	else
@@ -48,6 +48,8 @@ trap 'echo flmgr exited' EXIT
 trap 'GET_TERM && BAR_DRAW' WINCH
 
 # Programmatically define terminal colors, saves a few lines
+
+startdir="$1"
 
 for code in {0..7}
 do
@@ -119,14 +121,14 @@ LIST_DRAW() {
 	done
 	printf '\e[H\e[2K'
 	printf '\e['$TOPY';'$TOPX'H\e[2K'
-	printf "$f0$b7${FILES[$Current]}%-*s " "$(( $(( $COLUMNS / 2 )) - 5 - ${#FILES[$Current]} ))"
+	printf "$f0$b7${FILES[$Current]}%-*s " "$(( $(( $COLUMNS / 2 )) - TOPX - 2 - ${#FILES[$Current]} ))"
 }
 
 # This is so i dont have to change every occurence of "ls -AF" and things each time i change something
 LS_FUNC() {
 if [[ "$SHOWHIDDEN" == "true" ]];
 then
-	# The sed statemnet removes the * from the end of filenames of scripts
+	# The sed statemnet removes the * from the end of filenames of executables, i should add the other (/=>@|) ones but i cba
 	ls -AF | sed 's/*$//g'
 else
 	ls -F | sed 's/*$//g'
@@ -167,6 +169,7 @@ UP_DIR() {
 	clear
 	LIST_GET
 	HIGHLIGHT_CURR
+	DRAW_PAR
 }
 
 INPUT() {
@@ -256,13 +259,12 @@ DRAW_SUBD() {
 		printf "\e[${#SUB_FILES["$Count"]}D\e[B"
 		Count=$(( $Count + 1 ))
 	done
-#	printf "\e[2;"$(( $COLUMNS / 2 ))"H"
-#	printf "$f0$b7${SUB_FILES[0]}%-*s" "$(( $(( $COLUMNS / 2 )) - 4 - ${#SUB_FILES[0]} ))"
 }
 
 LIST_HIGH() {
 	case "$1" in
-		*document*|*text*) printf "$f2$b0$1$reg" ;;
+#		*document*|*text*) printf "$f1$b0$1$reg" ;;
+#		*.png*|*.jp*g*) printf "$f2$b0$1$reg" ;;
 		.*) printf "$f3$1$reg" ;;
 		*/*) printf "$f4$1$reg" ;;
 		*) printf "$1" ;;
@@ -275,6 +277,25 @@ CUSTOM_CURRENT() {
 	read COMMAND
 	$COMMAND "${FILES["$Current"]}"
 }
+
+if [[ -z "$startdir" ]];
+then
+	startdir="."
+fi
+
+if ! [[ -d "$startdir" ]];
+then
+	if ! [[ -e "$startdir" ]];
+	then
+		echo "Folder $startdir does not exist!"
+		exit
+	else
+		echo "$startdir is not a folder!"
+		exit
+	fi
+fi
+
+cd "$startdir"
 
 GET_TERM
 SETUP_TERM
