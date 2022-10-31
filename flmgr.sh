@@ -278,6 +278,7 @@ DRAW_TEXT() {
 		# this will print without escapes: 
 		# printf '\e['$wide_space'C%s\n' "${line::$wide_text}"
 		# but i kind of like sseeing colors in my files so ill keep it slighlty broken for now
+		# ALSO this fucks up if there is no support for disabling line wrapping, like in termux
 		printf "\e["$wide_space"C ${line::$wide_text}\n"
 	done <<< "$text_var"
 	IFS=$oldifs
