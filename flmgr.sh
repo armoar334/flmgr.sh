@@ -200,8 +200,8 @@ INPUT() {
 	LIST_DRAW 3 2 $Length $Current
 	BAR_DRAW
 	case "${FILES[$Current]}" in
-		*.sh*|*.txt*|*.md*) DRAW_TEXT ;;
 		*/*) DRAW_SUBD ;;
+		*.sh*|*.txt*|*.md*) DRAW_TEXT ;;
 		*) ;;
 	esac
 }
@@ -268,13 +268,17 @@ DRAW_SUBD() {
 
 DRAW_TEXT() {
 	text_var=$(head -$(( LINES - 3 )) "${FILES[$Current]}" )
-	wide_space=$(( $COLUMNS / 2 ))
+	wide_space=$(( $(( $COLUMNS / 2 )) - 2 ))
+	wide_text=$(( $COLUMNS / 2 ))
 	printf "\e[2;0H"
 	oldifs=$IFS
 	while IFS= read -r line; do
 		# This will regard escape sequences in printed text. idk how to fix this, and realistically
 		# it is rare you will find raw escape sequences in a file, so im not really bothered about fixing it
-		printf "\e["$wide_space"C ${line::$wide_space}\n"
+		# this will print without escapes: 
+		# printf '\e['$wide_space'C%s\n' "${line::$wide_text}"
+		# but i kind of like sseeing colors in my files so ill keep it slighlty broken for now
+		printf "\e["$wide_space"C ${line::$wide_text}\n"
 	done <<< "$text_var"
 	IFS=$oldifs
 }
