@@ -200,6 +200,7 @@ INPUT() {
 	LIST_DRAW 3 2 $Length $Current
 	BAR_DRAW
 	case "${FILES[$Current]}" in
+		*.sh*|*.txt*|*.md*) DRAW_TEXT ;;
 		*/*) DRAW_SUBD ;;
 		*) ;;
 	esac
@@ -265,6 +266,20 @@ DRAW_SUBD() {
 	done
 }
 
+DRAW_TEXT() {
+	text_var=$(head -$(( LINES - 3 )) "${FILES[$Current]}" )
+	wide_space=$(( $COLUMNS / 2 ))
+	printf "\e[2;0H"
+	oldifs=$IFS
+	while IFS= read -r line; do
+		# This will regard escape sequences in printed text. idk how to fix this, and realistically
+		# it is rare you will find raw escape sequences in a file, so im not really bothered about fixing it
+		printf "\e["$wide_space"C ${line::$wide_space}\n"
+	done <<< "$text_var"
+	IFS=$oldifs
+}
+
+
 LIST_HIGH() {
 	case "$1" in
 #		*document*|*text*) printf "$f1$b0$1$reg" ;;
@@ -316,3 +331,4 @@ while [[ $running -eq 1 ]];
 do
 	INPUT
 done
+
