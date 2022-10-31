@@ -274,13 +274,7 @@ DRAW_TEXT() {
 	printf "\e[2;0H"
 	oldifs=$IFS
 	while IFS= read -r line; do
-		# This will regard escape sequences in printed text. idk how to fix this, and realistically
-		# it is rare you will find raw escape sequences in a file, so im not really bothered about fixing it
-		# this will print without escapes: 
-		# printf '\e['$wide_space'C%s\n' "${line::$wide_text}"
-		# but i kind of like sseeing colors in my files so ill keep it slighlty broken for now
-		# ALSO this fucks up if there is no support for disabling line wrapping, like in termux
-		printf "\e["$wide_space"C ${line::$wide_text}\n"
+		printf '\e['$wide_space'C%s\n' "${line::$wide_text}"
 	done <<< "$text_var"
 	IFS=$oldifs
 }
