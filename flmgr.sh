@@ -269,7 +269,7 @@ DRAW_SUBD() {
 
 DRAW_TEXT() {
 	text_var=$(head -$(( LINES - 3 )) "${FILES[$Current]}" )
-	wide_space=$(( $(( $COLUMNS / 2 )) - 2 ))
+	wide_space=$(( $(( $COLUMNS / 2 )) - 1 ))
 	wide_text=$(( $COLUMNS / 2 ))
 	printf "\e[2;0H"
 	oldifs=$IFS
