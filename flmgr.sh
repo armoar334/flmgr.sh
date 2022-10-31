@@ -75,6 +75,8 @@ SETUP_TERM() {
 	printf '\e[2J\e[H'
 	# Hide cursor
 	printf '\e[?25l'
+	# Disable line wrapping
+	printf '\e[?7l'
 }
 
 RESTORE_TERM() {
@@ -82,6 +84,8 @@ RESTORE_TERM() {
 	printf '\e[?25h'
 	# clear in case original buffer was changed i.e due to opening another program in flmgr
 	clear
+	# Enable line wrapping
+	printf '\e[?7l'
 	# Return to original buffer
 	printf '\e[?1049l'
 	exit
@@ -185,11 +189,11 @@ INPUT() {
 		'[C'|'l'|'')	FILE_HANDLER ;;					# Handle file options, such as opening, cd etc
 		'c'|'C')	CUSTOM_CURRENT ;;				# Run custom command on file, same as unknown filetype
 		'[D'|'h')	UP_DIR && BAR_DRAW ;;				# cd ../ and start at dir just exited
+		# These next 4 seem to vary by keymap, so they may be unreliable. easy to fix locally, but hard to make "just work"
 		'[6'|'J')	Current=$(($Current + $(( LINES - 3 )) )) ;;	# PgDn
 		'[5'|'K')	Current=$(($Current - $(( LINES - 3 )) )) ;;	# PgUp
 		'[4'|'[F')	Current=$Length ;;				# End
 		'[H')		Current=0 ;;					# Home
-		# These last 4 seem to vary with the keymap, so they may be unreliable. easy to fix locally, but hard to make "just work"
 		'/') SEARCH_FILES ;;						# Search for files within directory
 		'q'|'Q') RESTORE_TERM ;;					# clean exit
 	esac
@@ -239,7 +243,7 @@ SEARCH_FILES(){
 			[*) ;;
 			*) search_term="$search_term$one_char" ;;
 		esac
-		readarray -t FILES < <(LS_FUNC | grep "$search_term")
+		readarray -t FILES < <(LS_FUNC | grep -i "$search_term")
 		Length=${#FILES[@]}
 		LIST_DRAW 3 2 $Length 0
 		BAR_DRAW
