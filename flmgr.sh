@@ -195,6 +195,7 @@ INPUT() {
 		'[4'|'[F')	Current=$Length ;;				# End
 		'[H')		Current=0 ;;					# Home
 		'/') SEARCH_FILES ;;						# Search for files within directory
+		'e') LIST_GET ;;						# Refresh current view, for use after search
 		'q'|'Q') RESTORE_TERM ;;					# clean exit
 	esac
 	LIST_DRAW 3 2 $Length $Current
