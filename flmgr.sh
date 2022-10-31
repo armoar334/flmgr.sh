@@ -331,4 +331,3 @@ while [[ $running -eq 1 ]];
 do
 	INPUT
 done
-
