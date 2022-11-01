@@ -294,6 +294,10 @@ DRAW_IMAGE() {
 	# All stole from https://github.com/gokcehan/lf/wiki/Previews
 	w3m_paths=(/usr/{local/,}{lib,libexec,lib64,libexec64}/w3m/w3mi*)
 	read -r w3m _ < <(type -p w3mimgdisplay "${w3m_paths[@]}")
+	if [[ -z "$w3m" ]];
+	then
+		return
+	fi
 	export $(xdotool getactivewindow getwindowgeometry --shell)
 	HALF_WIDTH=$(( WIDTH / 2 ))
 	HALF_HEIGHT=$(( HEIGHT / 2 ))

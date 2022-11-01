@@ -1,6 +1,6 @@
 # flmgr.sh
 ## a fast, hackable file manager written in bash
-flmgr.sh is a small, fast and most importantly modular file manager / browser, written with in bash
+flmgr.sh is a small, fast and most importantly modular file manager / browser, written in (almost) pure bash.
 
 ![alt text](https://raw.githubusercontent.com/armoar334/flmgr.sh/main/screenshot.png)
 
@@ -13,6 +13,9 @@ mv flmgr.sh ~/.local/bin/ # Or other appropriate location in your PATH
 
 ## Usage
 run ``flmgr.sh`` in a directory  
+
+## Optional dependencies
+>w3m and xdotool : for the w3m-img previews to display image in X11 terminals
 
 ### Keybinds
 >Up    / k : Scroll up  
