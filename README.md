@@ -2,7 +2,7 @@
 ## a fast, hackable file manager written in bash
 flmgr.sh is a small, fast and most importantly modular file manager / browser, written with in bash
 
-![alt text]()
+![alt text](https://raw.githubusercontent.com/armoar334/flmgr.sh/main/screenshot.png)
 
 ## Installing
 ```
