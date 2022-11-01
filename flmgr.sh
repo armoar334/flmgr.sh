@@ -269,7 +269,7 @@ DRAW_SUBD() {
 	cd ../
 	printf "\e[2;"$(( $COLUMNS / 2 ))"H"
 	Count=0
-	while [[ $Count -le $(( $LINES - 3 )) ]];
+	while [[ $Count -le $(( $LINES - 4 )) ]];
 	do
 		sub_temp="${SUB_FILES["$Count"]}"
 		LIST_HIGH "$sub_temp"
