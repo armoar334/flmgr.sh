@@ -294,7 +294,7 @@ DRAW_IMAGE() {
 	# All stole from https://github.com/gokcehan/lf/wiki/Previews
 	w3m_paths=(/usr/{local/,}{lib,libexec,lib64,libexec64}/w3m/w3mi*)
 	read -r w3m _ < <(type -p w3mimgdisplay "${w3m_paths[@]}")
-	if [[ -z "$w3m" ]] || [[ -z "$DISPLAY" ]];
+	if [[ -z "$w3m" ]] || [[ -z "$DISPLAY" ]] || ! [[ -x "$(command -v xdotool)" ]];
 	then
 		return
 	fi
