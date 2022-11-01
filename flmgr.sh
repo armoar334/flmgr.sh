@@ -45,7 +45,7 @@ trap 'RESTORE_TERM' INT TERM
 
 trap 'echo flmgr exited' EXIT
 
-trap 'GET_TERM && BAR_DRAW' WINCH
+trap 'REDRAW' WINCH
 
 # Programmatically define terminal colors, saves a few lines
 
@@ -58,6 +58,13 @@ do
 done
 
 reg=$(printf '\e[0m')
+
+REDRAW() {
+	GET_TERM
+	LIST_DRAW 3 2 $Length $Current
+	BAR_DRAW
+}
+
 
 GET_TERM(){
 	read -r LINES COLUMNS < <(stty size)
@@ -88,6 +95,8 @@ RESTORE_TERM() {
 	printf '\e[?7l'
 	# Return to original buffer
 	printf '\e[?1049l'
+	# reset colors
+	printf '\e[0m'
 	exit
 }
 
@@ -116,12 +125,11 @@ LIST_DRAW() {
 	printf '\e[0m'
 	printf '\e['$TOPY';'$TOPX'H'
 	Count=0
-	while [[ $Count -lt $(( LINES - 2 )) ]];
+	for Count in $( seq 0 $(( LINES - 2 )) );
 	do
 		the_file="${FILES[$(($Count + $Current))]}"
 		printf '\e['$((TOPY + $Count))';'$TOPX'H\e[2K'
 		LIST_HIGH "$the_file"
-		Count=$((Count + 1))
 	done
 	printf '\e[H\e[2K'
 	printf '\e['$TOPY';'$TOPX'H\e[2K'
@@ -202,6 +210,7 @@ INPUT() {
 	BAR_DRAW
 	case "${FILES[$Current]}" in
 		*/*) DRAW_SUBD ;;
+		*.png*|*.jp*) DRAW_IMAGE "${FILES[$Current]}" ;;
 		*.sh*|*.txt*|*.md*) DRAW_TEXT ;;
 		*) ;;
 	esac
@@ -252,6 +261,8 @@ SEARCH_FILES(){
 	done
 }
 
+# These are all preview things
+
 DRAW_SUBD() {
 	cd "${FILES[$Current]}"
 	readarray -t SUB_FILES < <(LS_FUNC)
@@ -268,15 +279,48 @@ DRAW_SUBD() {
 }
 
 DRAW_TEXT() {
-	text_var=$(head -$(( LINES - 3 )) "${FILES[$Current]}" )
+	text_var=$(head -$(( LINES - 2 )) "${FILES[$Current]}" )
 	wide_space=$(( $(( $COLUMNS / 2 )) - 1 ))
 	wide_text=$(( $COLUMNS / 2 ))
 	printf "\e[2;0H"
 	oldifs=$IFS
 	while IFS= read -r line; do
-		printf '\e['$wide_space'C%s\n' "${line::$wide_text}"
+		printf '\e['$wide_space'C\e[32m%s\n' "${line::$wide_text}"
 	done <<< "$text_var"
 	IFS=$oldifs
+}
+
+DRAW_IMAGE() {
+	# All stole from https://github.com/gokcehan/lf/wiki/Previews
+	w3m_paths=(/usr/{local/,}{lib,libexec,lib64,libexec64}/w3m/w3mi*)
+	read -r w3m _ < <(type -p w3mimgdisplay "${w3m_paths[@]}")
+	export $(xdotool getactivewindow getwindowgeometry --shell)
+	HALF_WIDTH=$(( WIDTH / 2 ))
+	HALF_HEIGHT=$(( HEIGHT / 2 ))
+	CELL_W=$(( WIDTH / COLUMNS ))
+	CELL_H=$(( HEIGHT / LINES ))
+	read -r img_width img_height < <("$w3m" <<< "5;${CACHE:-$1}")
+	printf "\e[2;"$(( COLUMNS / 2 ))"H"
+#	printf "Width of img: $img_width Height of img: $img_height"
+	((img_width > HALF_WIDTH)) && {
+		((img_height=img_height*HALF_WIDTH/img_width))
+		((img_width=HALF_WIDTH))
+	}
+
+	((img_height > HALF_HEIGHT)) && {
+		((img_width=img_width*HALF_HEIGHT/img_height))
+		((img_height=HALF_HEIGHT))
+	}
+
+	X_POS=$(( CELL_W * $(( COLUMNS / 2 )) ))
+	Y_POS=$CELL_H
+
+	printf '0;1;%s;%s;%s;%s;;;;;%s\n3;\n4\n' \
+		${X_POS:-0} \
+		${Y_POS:-0} \
+		"$img_width" \
+		"$img_height" \
+		"${CACHE:-$1}" | "$w3m" &>/dev/null
 }
 
 
