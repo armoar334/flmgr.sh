@@ -15,7 +15,9 @@ mv flmgr.sh ~/.local/bin/ # Or other appropriate location in your PATH
 run ``flmgr.sh`` in a directory  
 
 ## Optional dependencies
->w3m and xdotool : for the w3m-img previews to display image in X11 terminals
+> w3m: for w3m-img previews
+> xdotool: to display image in x11 / xwayland terminals
+> fbset: to display in frambuffer
 
 ### Keybinds
 >Up    / k : Scroll up  
