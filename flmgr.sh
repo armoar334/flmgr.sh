@@ -254,8 +254,13 @@ SUB_ACTIONS() {
 # Use scope to preview file
 SCOPE_FILE() {
 	PWD=$(pwd)
-	text_var=$(~/.config/ranger/scope.sh "$PWD/${FILES[$Current]}" "$(( COLUMNS / 2 ))" "$(( LINES - 3 ))" "/dev/null" False 2> /dev/null )
+	text_var=$(~/.config/ranger/scope.sh "$PWD/${FILES[$Current]}" "$(( COLUMNS / 2 ))" "$(( LINES - 3 ))" "/dev/null" False 2> /tmp/flmgerr )
 	text_var=$(head -$(( LINES - 3 )) <<< "$text_var")
+	if ! [[ -z "$(cat /tmp/flmgerr)" ]];
+	then
+		ERROR "$(tail -1 /tmp/flmgerr )"
+		return
+	fi
 	printf '\e[2;0H'
 	oldifs=$IFS
 	while IFS= read -r line; do
