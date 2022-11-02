@@ -20,6 +20,13 @@ IMAGE_VIEWER=feh
 SHOWHIDDEN="true"
 SCROLL_LOOP="false"
 
+# Use scope.sh from ranger
+USE_SCOPE="true"
+if [[ "$USE_COPE" == "true" ]] && ! [[ -e ~/.config/ranger/scope.sh ]];
+then
+	USE_SCOPE="false"
+fi
+
 # This is where you can specify actions for each filetype, see README for help
 FILE_HANDLER() {
 	HANDLE="${FILES[$Current]}"
@@ -241,8 +248,21 @@ SUB_ACTIONS() {
 		*.png*|*.jpg|*.jpeg*|*.bmp*|*.gif*) DRAW_IMAGE "${FILES[$Current]}" & ;;
 		*.txt*|*.sh*) DRAW_TXT ;;
 		*.md*) DRAW_MD ;;
-		*) ;;
+		*) SCOPE_FILE ;;
 	esac
+}
+
+# Use scope to preview file
+SCOPE_FILE() {
+	PWD=$(pwd)
+	text_var=$(~/.config/ranger/scope.sh "$PWD/${FILES[$Current]}" "$(( COLUMNS / 2 ))" "$(( LINES - 3 ))" "/dev/null" False 2> /dev/null )
+	text_var=$(head -$(( LINES - 3 )) <<< "$text_var")
+	printf '\e[2;0H'
+	oldifs=$IFS
+	while IFS= read -r line; do
+		printf '\e['$wide_space'C%s\n' "$line"
+	done <<< "$text_var"
+	IFS=$oldifs
 }
 
 # Send an error
