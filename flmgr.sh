@@ -75,6 +75,8 @@ GET_TERM(){
 	do
 		BAR_VAR=$(printf "$BAR_VAR ")
 	done
+	wide_space=$(( $(( COLUMNS / 2 )) - 1 ))
+	wide_text=$(( COLUMNS / 2 ))
 }
 
 SETUP_TERM() {
@@ -293,8 +295,6 @@ DRAW_SUBD() {
 	cd "${FILES[$Current]}"
 	SUB_FILES=$(LS_FUNC | head -$(( LINES - 2 )) )
 	cd ../
-	wide_space=$(( $(( COLUMNS / 2 )) - 1 ))
-	wide_text=$(( COLUMNS / 2 ))
 	printf "\e[2;0H"
 	oldifs=$IFS
 	while IFS= read -r line; do
@@ -311,8 +311,6 @@ DRAW_MD() {
 			-e 's/>.*$/'$f6'&'$reg'/g' \
 			-e 's/```.*```/'$f1'&'$reg'/g' -e 's/```//g'\
 			-e 's/``.*``/'$f1'&'$reg'/g' <<< "$text_var")
-	wide_space=$(( $(( COLUMNS / 2 )) - 1 ))
-	wide_text=$(( COLUMNS / 2 ))
 	printf "\e[2;0H"
 	oldifs=$IFS
 	while IFS= read -r line; do
@@ -325,8 +323,6 @@ DRAW_TXT() {
 	# just an observation, but this is ridiculously fast. i ran it in a window on a vertical 4k screen and it did it instantly. i also tried it horizontal on an 8k virtual display and had the same result. wild
 	# 5 mins later, just tried it on a vertical 8k screen. INSTANT. the whole script for flmgr rendered out INSTANTLY. im gonna use this for everyting from now
 	text_var=$(head -$(( LINES - 2 )) "${FILES[$Current]}" )
-	wide_space=$(( $(( $COLUMNS / 2 )) - 1 ))
-	wide_text=$(( $COLUMNS / 2 ))
 	printf "\e[1;0H"
 	oldifs=$IFS
 	while IFS= read -r line; do
