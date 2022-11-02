@@ -27,7 +27,7 @@ FILE_HANDLER() {
 	if [[ -e "$HANDLE" ]];
 	then
 		case $FILETYPE in
-			*directory*) cd $HANDLE && clear && LIST_GET ;;
+			*directory*) cd "$HANDLE" && clear && LIST_GET ;;
 			*script*|*text*|*.md*) $EDITOR "$HANDLE" ;;
 			*image*|*bitmap*) $IMAGE_VIEWER "$HANDLE" ;;
 			*) ERROR 'Dont know how to handle file:'"$PWD/$HANDLE" && CUSTOM_CURRENT ;;
@@ -333,7 +333,7 @@ DRAW_TXT() {
 
 DRAW_IMAGE() {
 	# All stole from https://github.com/gokcehan/lf/wiki/Previews
-	CACHE=$1
+#	CACHE=$1
 	w3m_paths=(/usr/{local/,}{lib,libexec,lib64,libexec64}/w3m/w3mi*)
 	read -r w3m _ < <(type -p w3mimgdisplay "${w3m_paths[@]}")
 	if [[ -z "$w3m" ]] || ! [[ -x "$(command -v xdotool)" ]];
@@ -376,9 +376,7 @@ DRAW_IMAGE() {
 		"$img_width" \
 		"$img_height" \
 		"${CACHE:-$1}" | "$w3m" &>/dev/null
-	read -esn1
 }
-
 
 LIST_HIGH() {
 	case "$1" in
