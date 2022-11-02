@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 
 # flmgr
@@ -343,7 +342,7 @@ DRAW_TXT() {
 	# just an observation, but this is ridiculously fast. i ran it in a window on a vertical 4k screen and it did it instantly. i also tried it horizontal on an 8k virtual display and had the same result. wild
 	# 5 mins later, just tried it on a vertical 8k screen. INSTANT. the whole script for flmgr rendered out INSTANTLY. im gonna use this for everyting from now
 	text_var=$(head -$(( LINES - 2 )) "${FILES[$Current]}" )
-	printf "\e[1;0H"
+	printf "\e[2;0H"
 	oldifs=$IFS
 	while IFS= read -r line; do
 		printf '\e['$wide_space'C\e[32m%s\n' "${line::$wide_text}"
