@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 
 # flmgr
@@ -55,13 +56,14 @@ for code in {0..7}
 do
 	declare f$code=$(printf '\e[3'$code'm')
 	declare b$code=$(printf '\e[4'$code'm')
+	declare h$code=$(printf '\e[9'$code'm') # Brighter forground colors
 done
 
 reg=$(printf '\e[0m')
 
 REDRAW() {
 	GET_TERM
-	LIST_DRAW 3 2 $Length $Current
+	LIST_DRAW $Length $Current
 	BAR_DRAW
 }
 
@@ -101,10 +103,10 @@ RESTORE_TERM() {
 }
 
 LIST_DRAW() {
-	TOPX=$1
-	TOPY=$2
-	Length=$3
-	Current=$4
+	TOPX=3
+	TOPY=2
+	Length=$1
+	Current=$2
 	printf '\e[?25l'
 
 	if [[ "$SCROLL_LOOP" == "true" ]];
@@ -146,6 +148,8 @@ LIST_DRAW() {
 	printf "$f0$b7${FILES[$Current]}%-*s " "$(( $(( $COLUMNS / 2 )) - TOPX - 2 - ${#FILES[$Current]} ))"
 	printf '\e[0m'
 	printf '\e['$TOPY';'$TOPX'H'
+
+	# This can be replaced with the IFS trick i used for the preview stuff, but i arrays are a pain. would be a good speed improvement over slower connections like an ssh
 	Count=0
 	for Count in $( seq 1 $(( LINES - 2 )) );
 	do
@@ -224,7 +228,7 @@ INPUT() {
 		'e') LIST_GET ;;						# Refresh current view, for use after search
 		'q'|'Q') RESTORE_TERM ;;					# clean exit
 	esac
-	LIST_DRAW 3 2 $Length $Current
+	LIST_DRAW $Length $Current
 	BAR_DRAW
 	SUB_ACTIONS
 }
@@ -232,8 +236,9 @@ INPUT() {
 SUB_ACTIONS() {
 	case "${FILES[$Current]}" in
 		*/*) DRAW_SUBD ;;
-		*.png*|*.jp*|*.bmp*) DRAW_IMAGE "${FILES[$Current]}" & ;;
-		*.sh*|*.txt*|*.md*) DRAW_TEXT ;;
+		*.png*|*.jpg|*.jpeg*|*.bmp*|*.gif*) DRAW_IMAGE "${FILES[$Current]}" & ;;
+		*.txt*|*.sh*) DRAW_TXT ;;
+		*.md*) DRAW_MD ;;
 		*) ;;
 	esac
 }
@@ -277,7 +282,7 @@ SEARCH_FILES(){
 		esac
 		readarray -t FILES < <(LS_FUNC | grep -i "$search_term")
 		Length=${#FILES[@]}
-		LIST_DRAW 3 2 $Length 0
+		LIST_DRAW $Length 0
 		BAR_DRAW
 	done
 }
@@ -286,20 +291,38 @@ SEARCH_FILES(){
 
 DRAW_SUBD() {
 	cd "${FILES[$Current]}"
-	readarray -t SUB_FILES < <(LS_FUNC)
+	SUB_FILES=$(LS_FUNC | head -$(( LINES - 2 )) )
 	cd ../
-	printf "\e[2;"$(( $COLUMNS / 2 ))"H"
-	Count=0
-	while [[ $Count -le $(( $LINES - 4 )) ]];
-	do
-		sub_temp="${SUB_FILES["$Count"]}"
-		LIST_HIGH "$sub_temp"
-		printf "\e[${#SUB_FILES["$Count"]}D\e[B"
-		Count=$(( $Count + 1 ))
-	done
+	wide_space=$(( $(( COLUMNS / 2 )) - 1 ))
+	wide_text=$(( COLUMNS / 2 ))
+	printf "\e[2;0H"
+	oldifs=$IFS
+	while IFS= read -r line; do
+		printf '\e['$wide_space'C'
+		LIST_HIGH "$line"
+		printf '\n'
+	done <<< "$SUB_FILES"
+	IFS=$oldifs
 }
 
-DRAW_TEXT() {
+DRAW_MD() {
+	text_var=$(head -$(( LINES - 2 )) "${FILES[$Current]}")
+	text_var=$(sed -e 's/#.*$/'$f3'&'$reg'/g' \
+			-e 's/>.*$/'$f6'&'$reg'/g' \
+			-e 's/``.*``/'$f1'&'$reg'/g' <<< "$text_var")
+	wide_space=$(( $(( COLUMNS / 2 )) - 1 ))
+	wide_text=$(( COLUMNS / 2 ))
+	printf "\e[2;0H"
+	oldifs=$IFS
+	while IFS= read -r line; do
+		printf '\e['$wide_space'C%s\n' "${line::$wide_text}"
+	done <<< "$text_var"
+	IFS=$oldifs
+}
+
+DRAW_TXT() {
+	# more of anb observation, but this is ridiculously fast. i ran it in a window on a vertical 4k screen and it did it instantly. i also tried it horizontal on an 8k virtual display and had the same result. wild
+	# 5 mins later, just tried it on a vertical 8k screen. INSTANT. the whole script for flmgr rendered out INSTANTLY. im gonna use this for everyting from now
 	text_var=$(head -$(( LINES - 2 )) "${FILES[$Current]}" )
 	wide_space=$(( $(( $COLUMNS / 2 )) - 1 ))
 	wide_text=$(( $COLUMNS / 2 ))
@@ -338,11 +361,8 @@ DRAW_IMAGE() {
 		((img_height=HALF_HEIGHT))
 	}
 
-	X_POS=$(( WIDTH - HALF_WIDTH - CELL_W - CELL_W ))
+	X_POS=$(( CELL_W * $(( COLUMNS / 2 )) ))
 	Y_POS=$CELL_H
-
-#	printf "\e["$(( $(( img_height / CELL_H )) + 3 ))";"$(( COLUMNS / 2 ))"H"
-#	printf "%sx%s" "$orwid" "$orhig"
 
 	printf '0;1;%s;%s;%s;%s;;;;;%s\n3;\n4\n' \
 		${X_POS:-0} \
@@ -392,7 +412,7 @@ SETUP_TERM
 running=1
 escape_char=$(printf "\u1b")
 LIST_GET
-LIST_DRAW 3 2 $Length 0
+LIST_DRAW $Length 0
 BAR_DRAW
 SUB_ACTIONS
 
