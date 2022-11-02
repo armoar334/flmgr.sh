@@ -4,7 +4,6 @@
 # file browser
 # file browser in pure bash, built for hackability
 
-
 #
 # Editable values
 #
@@ -18,6 +17,7 @@ fi
 # Other / Custom
 IMAGE_VIEWER=feh
 SHOWHIDDEN="true"
+SCROLL_LOOP="false"
 
 # This is where you can specify actions for each filetype, see README for help
 FILE_HANDLER() {
@@ -106,34 +106,54 @@ LIST_DRAW() {
 	Length=$3
 	Current=$4
 	printf '\e[?25l'
-#Length sanitization
-	if [[ $Length -ge ${#FILES[@]} ]];
+
+	if [[ "$SCROLL_LOOP" == "true" ]];
 	then
-		Length=${#FILES[@]}
+	#Length sanitization
+		if [[ $Length -ge ${#FILES[@]} ]];
+		then
+			Length=${#FILES[@]}
+		fi
+
+	#Current sanitization
+		if [[ $Current -ge $Length ]];
+		then
+			Current=0
+		fi
+		if [[ $Current -lt 0 ]];
+		then
+			Current=$(( $Length - 1 ))
+		fi
+	else
+	#Length sanitization
+		if [[ $Length -ge ${#FILES[@]} ]];
+		then
+			Length=${#FILES[@]}
+		fi
+
+	#Current sanitization
+		if [[ $Current -ge $Length ]];
+		then
+			Current=$(( $Length - 1 ))
+		fi
+		if [[ $Current -le 0 ]];
+		then
+			Current=0
+		fi
 	fi
 
-#Current sanitization
-	if [[ $Current -ge $Length ]];
-	then
-		Current=$(( $Length - 1 ))
-	fi
-	if [[ $Current -le 0 ]];
-	then
-		Current=0
-	fi
-
+	printf '\e['$TOPY';'$TOPX'H\e[2K'
+	printf "$f0$b7${FILES[$Current]}%-*s " "$(( $(( $COLUMNS / 2 )) - TOPX - 2 - ${#FILES[$Current]} ))"
 	printf '\e[0m'
 	printf '\e['$TOPY';'$TOPX'H'
 	Count=0
-	for Count in $( seq 0 $(( LINES - 2 )) );
+	for Count in $( seq 1 $(( LINES - 2 )) );
 	do
 		the_file="${FILES[$(($Count + $Current))]}"
-		printf '\e['$((TOPY + $Count))';'$TOPX'H\e[2K'
+		printf "\e["$(( $TOPY + $Count ))";"$TOPX"H\e[2K"
 		LIST_HIGH "$the_file"
 	done
 	printf '\e[H\e[2K'
-	printf '\e['$TOPY';'$TOPX'H\e[2K'
-	printf "$f0$b7${FILES[$Current]}%-*s " "$(( $(( $COLUMNS / 2 )) - TOPX - 2 - ${#FILES[$Current]} ))"
 }
 
 # This is so i dont have to change every occurence of "ls -AF" and things each time i change something
@@ -181,7 +201,6 @@ UP_DIR() {
 	clear
 	LIST_GET
 	HIGHLIGHT_CURR
-	DRAW_PAR
 }
 
 INPUT() {
@@ -190,7 +209,6 @@ INPUT() {
 	then
 		read -rsn2 mode
 	fi
-#	clear
 	case $mode in
 		'[A'|'k'|'')	Current=$(($Current - 1)) ;;			# up 1 item
 		'[B'|'j'|'')	Current=$(($Current + 1)) ;;			# down 1 item
@@ -208,9 +226,13 @@ INPUT() {
 	esac
 	LIST_DRAW 3 2 $Length $Current
 	BAR_DRAW
+	SUB_ACTIONS
+}
+
+SUB_ACTIONS() {
 	case "${FILES[$Current]}" in
 		*/*) DRAW_SUBD ;;
-		*.png*|*.jp*) DRAW_IMAGE "${FILES[$Current]}" ;;
+		*.png*|*.jp*|*.bmp*) DRAW_IMAGE "${FILES[$Current]}" & ;;
 		*.sh*|*.txt*|*.md*) DRAW_TEXT ;;
 		*) ;;
 	esac
@@ -232,7 +254,6 @@ HIGHLIGHT_CURR() {
 		then
 			Current=$Count
 		fi
-		echo "${FILES["$Count"]} $Count"
 		Count=$(( Count + 1 ))
 	done
 }
@@ -357,12 +378,10 @@ then
 		echo "Folder $startdir does not exist!"
 		exit
 	else
-		echo "$startdir is not a folder!"
-		exit
+		cd "$(dirname $startdir)"
 	fi
 fi
 
-cd "$startdir"
 
 GET_TERM
 SETUP_TERM
@@ -371,6 +390,8 @@ escape_char=$(printf "\u1b")
 LIST_GET
 LIST_DRAW 3 2 $Length 0
 BAR_DRAW
+SUB_ACTIONS
+
 case "${FILES[$Current]}" in
 	*/*) DRAW_SUBD ;;
 	*) ;;
