@@ -366,6 +366,9 @@ CUSTOM_CURRENT() {
 	printf 'Run custom command on '"${FILES["$Current"]}"': '
 	read COMMAND
 	$COMMAND "${FILES["$Current"]}"
+	oldcurr=$Current
+	LIST_GET
+	Current=$oldcurr
 }
 
 if [[ -z "$startdir" ]];
