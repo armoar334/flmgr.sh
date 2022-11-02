@@ -300,15 +300,16 @@ DRAW_SUBD() {
 	while IFS= read -r line; do
 		printf '\e['$wide_space'C'
 		LIST_HIGH "$line"
-		printf '\n'
+		printf "\n"
 	done <<< "$SUB_FILES"
 	IFS=$oldifs
 }
 
 DRAW_MD() {
-	text_var=$(head -$(( LINES - 2 )) "${FILES[$Current]}")
+	text_var=$(head -$(( LINES - 3 )) "${FILES[$Current]}" )
 	text_var=$(sed -e 's/#.*$/'$f3'&'$reg'/g' \
 			-e 's/>.*$/'$f6'&'$reg'/g' \
+			-e 's/```.*```/'$f1'&'$reg'/g' -e 's/```//g'\
 			-e 's/``.*``/'$f1'&'$reg'/g' <<< "$text_var")
 	wide_space=$(( $(( COLUMNS / 2 )) - 1 ))
 	wide_text=$(( COLUMNS / 2 ))
@@ -321,12 +322,12 @@ DRAW_MD() {
 }
 
 DRAW_TXT() {
-	# more of anb observation, but this is ridiculously fast. i ran it in a window on a vertical 4k screen and it did it instantly. i also tried it horizontal on an 8k virtual display and had the same result. wild
+	# just an observation, but this is ridiculously fast. i ran it in a window on a vertical 4k screen and it did it instantly. i also tried it horizontal on an 8k virtual display and had the same result. wild
 	# 5 mins later, just tried it on a vertical 8k screen. INSTANT. the whole script for flmgr rendered out INSTANTLY. im gonna use this for everyting from now
 	text_var=$(head -$(( LINES - 2 )) "${FILES[$Current]}" )
 	wide_space=$(( $(( $COLUMNS / 2 )) - 1 ))
 	wide_text=$(( $COLUMNS / 2 ))
-	printf "\e[2;0H"
+	printf "\e[1;0H"
 	oldifs=$IFS
 	while IFS= read -r line; do
 		printf '\e['$wide_space'C\e[32m%s\n' "${line::$wide_text}"
@@ -336,20 +337,29 @@ DRAW_TXT() {
 
 DRAW_IMAGE() {
 	# All stole from https://github.com/gokcehan/lf/wiki/Previews
+	CACHE=$1
 	w3m_paths=(/usr/{local/,}{lib,libexec,lib64,libexec64}/w3m/w3mi*)
 	read -r w3m _ < <(type -p w3mimgdisplay "${w3m_paths[@]}")
-	if [[ -z "$w3m" ]] || [[ -z "$DISPLAY" ]] || ! [[ -x "$(command -v xdotool)" ]];
+	if [[ -z "$w3m" ]] || ! [[ -x "$(command -v xdotool)" ]];
 	then
 		return
 	fi
-	export $(xdotool getactivewindow getwindowgeometry --shell)
+	if ! [[ -z "$DISPLAY" ]];
+	then
+		# For x11 / xwayland
+		export $(xdotool getactivewindow getwindowgeometry --shell)
+	else
+		# For framebuffer (fbterm / tty etc)
+		fbmode=$(fbset | grep mode | grep x | sed 's/mode //g' | tr -d '"' | sed 's/x/ /g')
+		WIDTH=$(cut -d' ' -f1 <<< "$fbmode")
+		HEIGHT=$(cut -d' ' -f2 <<< "$fbmode")
+	fi
+
 	CELL_W=$(( WIDTH / COLUMNS ))
 	CELL_H=$(( HEIGHT / LINES ))
 	HALF_WIDTH=$(( CELL_W * $(( COLUMNS / 2 )) ))
 	HALF_HEIGHT=$(( CELL_H * LINES ))
 	read -r img_width img_height < <("$w3m" <<< "5;${CACHE:-$1}")
-	orwid=$img_width
-	orhig=$img_height
 	printf "\e[2;"$(( COLUMNS / 2 ))"H"
 	((img_width > HALF_WIDTH)) && {
 		((img_height=img_height*HALF_WIDTH/img_width))
@@ -370,6 +380,7 @@ DRAW_IMAGE() {
 		"$img_width" \
 		"$img_height" \
 		"${CACHE:-$1}" | "$w3m" &>/dev/null
+	read -esn1
 }
 
 

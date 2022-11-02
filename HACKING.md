@@ -44,6 +44,33 @@ case $FILETYPE in
 esac
 ```
 
+### Custom previewer
+Create a function named after the filetype you intend to preview, i.e for .md files ``DRAW_MD``  
+Add a match to the case statement in ``SUB_ACTIONS``  
+```
+*.md*) DRAW_MD ;;
+```
+copy the following into the main body of your function:  
+```
+DRAW_MD() {
+	text_var=$()
+        wide_space=$(( $(( COLUMNS / 2 )) - 1 ))
+        wide_text=$(( COLUMNS / 2 ))
+        printf "\e[2;0H"
+        oldifs=$IFS
+        while IFS= read -r line; do
+                printf '\e['$wide_space'C%s\n' "${line::$wide_text}"
+        done <<< "$text_var"
+        IFS=$oldifs
+}
+```
+Now in the ``$text_var`` subshell, add a ``head -$(( LINES - 2 )) "${FILES[$Current]}"`` and pipe it to yourformatting program:  
+```
+text_var=$(head -$(( LINES - 2 )) "${FILES[$Current]}" | glow )
+```
+Now when you hover over a .md file, it will be fed into glow and printed as formatted output next to the main file browser  
+
+
 ### Custom input
 See the ``INPUT`` function  
 It reads one character, and if that character is an escape character, read one more. This allows for not only regular character input, but also reading characters such as arrow keys.  
