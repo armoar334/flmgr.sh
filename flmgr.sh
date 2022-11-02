@@ -320,13 +320,14 @@ DRAW_IMAGE() {
 		return
 	fi
 	export $(xdotool getactivewindow getwindowgeometry --shell)
-	HALF_WIDTH=$(( WIDTH / 2 ))
-	HALF_HEIGHT=$(( HEIGHT / 2 ))
 	CELL_W=$(( WIDTH / COLUMNS ))
 	CELL_H=$(( HEIGHT / LINES ))
+	HALF_WIDTH=$(( CELL_W * $(( COLUMNS / 2 )) ))
+	HALF_HEIGHT=$(( CELL_H * LINES ))
 	read -r img_width img_height < <("$w3m" <<< "5;${CACHE:-$1}")
+	orwid=$img_width
+	orhig=$img_height
 	printf "\e[2;"$(( COLUMNS / 2 ))"H"
-#	printf "Width of img: $img_width Height of img: $img_height"
 	((img_width > HALF_WIDTH)) && {
 		((img_height=img_height*HALF_WIDTH/img_width))
 		((img_width=HALF_WIDTH))
@@ -337,8 +338,11 @@ DRAW_IMAGE() {
 		((img_height=HALF_HEIGHT))
 	}
 
-	X_POS=$(( CELL_W * $(( COLUMNS / 2 )) ))
+	X_POS=$(( WIDTH - HALF_WIDTH - CELL_W - CELL_W ))
 	Y_POS=$CELL_H
+
+#	printf "\e["$(( $(( img_height / CELL_H )) + 3 ))";"$(( COLUMNS / 2 ))"H"
+#	printf "%sx%s" "$orwid" "$orhig"
 
 	printf '0;1;%s;%s;%s;%s;;;;;%s\n3;\n4\n' \
 		${X_POS:-0} \
@@ -351,8 +355,6 @@ DRAW_IMAGE() {
 
 LIST_HIGH() {
 	case "$1" in
-#		*document*|*text*) printf "$f1$b0$1$reg" ;;
-#		*.png*|*.jp*g*) printf "$f2$b0$1$reg" ;;
 		.*) printf "$f3$1$reg" ;;
 		*/*) printf "$f4$1$reg" ;;
 		*) printf "$1" ;;
@@ -376,10 +378,9 @@ then
 	if ! [[ -e "$startdir" ]];
 	then
 		echo "Folder $startdir does not exist!"
-		exit
-	else
-		cd "$(dirname $startdir)"
 	fi
+else
+	cd "$startdir"
 fi
 
 
