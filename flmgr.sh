@@ -20,7 +20,7 @@ SHOWHIDDEN="true"
 SCROLL_LOOP="false"
 
 # Use scope.sh from ranger
-USE_SCOPE="true"
+USE_SCOPE="false"
 if [[ "$USE_COPE" == "true" ]] && ! [[ -e ~/.config/ranger/scope.sh ]];
 then
 	USE_SCOPE="false"
@@ -173,9 +173,9 @@ LS_FUNC() {
 if [[ "$SHOWHIDDEN" == "true" ]];
 then
 	# The sed statemnet removes the * from the end of filenames of executables, i should add the other (/=>@|) ones but i cba
-	ls -AF | sed 's/*$//g'
+	ls -AF | sed -e 's/*$//g' -e 's/\@$/\//g'
 else
-	ls -F | sed 's/*$//g'
+	ls -F | sed -e 's/*$//g' -e 's/\@$/\//g'
 fi
 }
 
@@ -247,12 +247,13 @@ SUB_ACTIONS() {
 		*.png*|*.jpg|*.jpeg*|*.bmp*|*.gif*) DRAW_IMAGE "${FILES[$Current]}" & ;;
 		*.txt*|*.sh*) DRAW_TXT ;;
 		*.md*) DRAW_MD ;;
-		*) SCOPE_FILE ;;
+		*) if [[ "$USE_SCOPE" == "true" ]]; then SCOPE_FILE; fi ;;
 	esac
 }
 
 # Use scope to preview file
 SCOPE_FILE() {
+	rm /tmp/flmgerr
 	PWD=$(pwd)
 	text_var=$(~/.config/ranger/scope.sh "$PWD/${FILES[$Current]}" "$(( COLUMNS / 2 ))" "$(( LINES - 3 ))" "/dev/null" False 2> /tmp/flmgerr )
 	text_var=$(head -$(( LINES - 3 )) <<< "$text_var")
@@ -420,16 +421,15 @@ CUSTOM_CURRENT() {
 	Current=$oldcurr
 }
 
-if [[ -z "$startdir" ]];
-then
-	startdir="."
-fi
-
 if ! [[ -d "$startdir" ]];
 then
 	if ! [[ -e "$startdir" ]];
 	then
 		echo "Folder $startdir does not exist!"
+	else
+		base_name=$(basename "$startdir")
+		cd "$(echo $startdir | sed 's/\(.*\)\/\(.*\)\.\(.*\)$/\1/')"
+		FROM_DIR="${startdir/*\/}"
 	fi
 else
 	cd "$startdir"
@@ -441,7 +441,13 @@ SETUP_TERM
 running=1
 escape_char=$(printf "\u1b")
 LIST_GET
-LIST_DRAW $Length 0
+Current=0
+# If supplied arguent is a file start with it as the current item
+if ! [[ -z "$FROM_DIR" ]];
+then
+	HIGHLIGHT_CURR
+fi
+LIST_DRAW $Length $Current
 BAR_DRAW
 SUB_ACTIONS
 
