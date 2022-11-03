@@ -50,7 +50,7 @@ FILE_HANDLER() {
 
 trap 'RESTORE_TERM' INT TERM
 
-trap 'echo flmgr exited' EXIT
+#trap 'echo flmgr exited' EXIT
 
 trap 'REDRAW' WINCH
 
@@ -421,20 +421,22 @@ CUSTOM_CURRENT() {
 	Current=$oldcurr
 }
 
-if ! [[ -d "$startdir" ]];
+if ! [[ -z "$startdir" ]];
 then
-	if ! [[ -e "$startdir" ]];
+	if ! [[ -d "$startdir" ]];
 	then
-		echo "Folder $startdir does not exist!"
+		if ! [[ -e "$startdir" ]];
+		then
+			echo "Folder $startdir does not exist!"
+		else
+			base_name=$(basename "$startdir")
+			cd "$(echo $startdir | sed 's/\(.*\)\/\(.*\)\.\(.*\)$/\1/')"
+			FROM_DIR="${startdir/*\/}"
+		fi
 	else
-		base_name=$(basename "$startdir")
-		cd "$(echo $startdir | sed 's/\(.*\)\/\(.*\)\.\(.*\)$/\1/')"
-		FROM_DIR="${startdir/*\/}"
+		cd "$startdir"
 	fi
-else
-	cd "$startdir"
 fi
-
 
 GET_TERM
 SETUP_TERM
