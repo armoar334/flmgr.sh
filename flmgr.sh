@@ -430,7 +430,11 @@ then
 			echo "Folder $startdir does not exist!"
 		else
 			base_name=$(basename "$startdir")
-			cd "$(echo $startdir | sed 's/\(.*\)\/\(.*\)\.\(.*\)$/\1/')"
+			dir="$(echo $startdir | sed 's/\(.*\)\/\(.*\)\.\(.*\)$/\1/')"
+			if [[ -d "$dir" ]];
+			then
+				cd "$dir"
+			fi
 			FROM_DIR="${startdir/*\/}"
 		fi
 	else
