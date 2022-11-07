@@ -41,6 +41,7 @@ FILE_HANDLER() {
 	else
 		ERROR "File $HANDLE does not exist!"
 	fi
+	printf '\e[?7l'
 	BAR_DRAW
 }
 
