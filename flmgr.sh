@@ -19,7 +19,7 @@ IMAGE_VIEWER=feh
 SHOWHIDDEN="true"
 SCROLL_LOOP="false"
 
-# Use scope.sh from ranger
+# Use scope.sh from ranger for file previews
 USE_SCOPE="false"
 if [[ "$USE_COPE" == "true" ]] && ! [[ -e ~/.config/ranger/scope.sh ]];
 then
@@ -174,9 +174,9 @@ LS_FUNC() {
 if [[ "$SHOWHIDDEN" == "true" ]];
 then
 	# The sed statemnet removes the * from the end of filenames of executables, i should add the other (/=>@|) ones but i cba
-	ls -AF | sed -e 's/*$//g' -e 's/\@$/\//g'
+	ls -AF | sed -e 's/*$//g' -e 's/\@$//g'
 else
-	ls -F | sed -e 's/*$//g' -e 's/\@$/\//g'
+	ls -F | sed -e 's/*$//g' -e 's/\@$//g'
 fi
 }
 
@@ -243,10 +243,11 @@ INPUT() {
 }
 
 SUB_ACTIONS() {
-	case "${FILES[$Current]}" in
-		*/*) DRAW_SUBD ;;
-		*.png*|*.jpg|*.jpeg*|*.bmp*|*.gif*) DRAW_IMAGE "${FILES[$Current]}" & ;;
-		*.txt*|*.sh*) DRAW_TXT ;;
+	temp_type=$(file "${FILES[$Current]}")
+	case "$temp_type" in
+		*directory*) DRAW_SUBD ;;
+		*image*) DRAW_IMAGE "${FILES[$Current]}" & ;;
+		*text*) DRAW_TXT ;;
 		*.md*) DRAW_MD ;;
 		*) if [[ "$USE_SCOPE" == "true" ]]; then SCOPE_FILE; fi ;;
 	esac
@@ -318,9 +319,10 @@ SEARCH_FILES(){
 # These are all preview things
 
 DRAW_SUBD() {
+	oldpwd="$PWD"
 	cd "${FILES[$Current]}"
 	SUB_FILES=$(LS_FUNC | head -$(( LINES - 2 )) )
-	cd ../
+	cd "$oldpwd"
 	printf "\e[2;0H"
 	oldifs=$IFS
 	while IFS= read -r line; do
@@ -380,7 +382,7 @@ DRAW_IMAGE() {
 	CELL_W=$(( WIDTH / COLUMNS ))
 	CELL_H=$(( HEIGHT / LINES ))
 	HALF_WIDTH=$(( CELL_W * $(( COLUMNS / 2 )) ))
-	HALF_HEIGHT=$(( CELL_H * LINES ))
+	HALF_HEIGHT=$(( $(( CELL_H * LINES )) - $(( CELL_H * 3 )) ))
 	read -r img_width img_height < <("$w3m" <<< "5;${CACHE:-$1}")
 	printf "\e[2;"$(( COLUMNS / 2 ))"H"
 	((img_width > HALF_WIDTH)) && {
