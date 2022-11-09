@@ -32,7 +32,7 @@ FILE_HANDLER() {
 	FILETYPE=$(file "${FILES[$Current]}")
 	if [[ -e "$HANDLE" ]];
 	then
-		case $FILETYPE in
+		case "$FILETYPE" in
 			*directory*) cd "$HANDLE" && clear && LIST_GET ;;
 			*script*|*text*|*.md*) $EDITOR "$HANDLE" ;;
 			*image*|*bitmap*) $IMAGE_VIEWER "$HANDLE" ;;
@@ -174,9 +174,9 @@ LS_FUNC() {
 if [[ "$SHOWHIDDEN" == "true" ]];
 then
 	# The sed statemnet removes the * from the end of filenames of executables, i should add the other (/=>@|) ones but i cba
-	ls -AF | sed -e 's/*$//g' -e 's/\@$//g'
+	ls -AF $1 | sed -e 's/*$//g' -e 's/\@$//g'
 else
-	ls -F | sed -e 's/*$//g' -e 's/\@$//g'
+	ls -F $1 | sed -e 's/*$//g' -e 's/\@$//g'
 fi
 }
 
@@ -247,8 +247,8 @@ SUB_ACTIONS() {
 	case "$temp_type" in
 		*directory*) DRAW_SUBD ;;
 		*image*) DRAW_IMAGE "${FILES[$Current]}" & ;;
-		*text*) DRAW_TXT ;;
 		*.md*) DRAW_MD ;;
+		*text*|*script*) DRAW_TXT ;;
 		*) if [[ "$USE_SCOPE" == "true" ]]; then SCOPE_FILE; fi ;;
 	esac
 }
@@ -303,7 +303,7 @@ SEARCH_FILES(){
 		then
 			read -rsn2 one_char
 		fi
-		case $one_char in
+		case "$one_char" in
 			''|'[A'|'[B') searching=0 ;;
 			''|'[P') if [[ ${#search_term} -ge 1 ]]; then search_term=${search_term::-1}; fi ;;
 			[*) ;;
@@ -319,10 +319,7 @@ SEARCH_FILES(){
 # These are all preview things
 
 DRAW_SUBD() {
-	oldpwd="$PWD"
-	cd "${FILES[$Current]}"
-	SUB_FILES=$(LS_FUNC | head -$(( LINES - 2 )) )
-	cd "$oldpwd"
+	SUB_FILES=$(LS_FUNC "${FILES[$Current]}" | head -$(( LINES - 2 )) )
 	printf "\e[2;0H"
 	oldifs=$IFS
 	while IFS= read -r line; do
@@ -333,12 +330,13 @@ DRAW_SUBD() {
 	IFS=$oldifs
 }
 
+# This is unused, keeping it here for a bit tho
 DRAW_MD() {
 	text_var=$(head -$(( LINES - 3 )) "${FILES[$Current]}" )
 	text_var=$(sed -e 's/#.*$/'$f3'&'$reg'/g' \
 			-e 's/>.*$/'$f6'&'$reg'/g' \
 			-e 's/```.*```/'$f1'&'$reg'/g' -e 's/```//g'\
-			-e 's/``.*``/'$f1'&'$reg'/g' <<< "$text_var")
+			-e 's/``.*``/'$f1'&'$reg'/g' -e 's/``//g' <<< "$text_var")
 	printf "\e[2;0H"
 	oldifs=$IFS
 	while IFS= read -r line; do
@@ -395,7 +393,7 @@ DRAW_IMAGE() {
 		((img_height=HALF_HEIGHT))
 	}
 
-	X_POS=$(( CELL_W * $(( COLUMNS / 2 )) ))
+	X_POS=$(( WIDTH - img_width - CELL_W ))
 	Y_POS=$CELL_H
 
 	printf '0;1;%s;%s;%s;%s;;;;;%s\n3;\n4\n' \
