@@ -247,7 +247,6 @@ SUB_ACTIONS() {
 	case "$temp_type" in
 		*directory*) DRAW_SUBD ;;
 		*image*) DRAW_IMAGE "${FILES[$Current]}" & ;;
-		*.md*) DRAW_MD ;;
 		*text*|*script*) DRAW_TXT ;;
 		*) if [[ "$USE_SCOPE" == "true" ]]; then SCOPE_FILE; fi ;;
 	esac
