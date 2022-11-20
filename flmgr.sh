@@ -20,8 +20,8 @@ SHOWHIDDEN="true"
 SCROLL_LOOP="false"
 
 # Use scope.sh from ranger for file previews
-USE_SCOPE="false"
-if [[ "$USE_COPE" == "true" ]] && ! [[ -e ~/.config/ranger/scope.sh ]];
+USE_SCOPE="true"
+if [[ "$USE_SCOPE" == "true" ]] && ! [[ -e ~/.config/ranger/scope.sh ]];
 then
 	USE_SCOPE="false"
 fi
@@ -357,50 +357,61 @@ DRAW_TXT() {
 }
 
 DRAW_IMAGE() {
-	# All stole from https://github.com/gokcehan/lf/wiki/Previews
-#	CACHE=$1
-	w3m_paths=(/usr/{local/,}{lib,libexec,lib64,libexec64}/w3m/w3mi*)
-	read -r w3m _ < <(type -p w3mimgdisplay "${w3m_paths[@]}")
-	if [[ -z "$w3m" ]] || ! [[ -x "$(command -v xdotool)" ]];
+	if [[ "$TERM_PROGRAM" == *"iTerm"* ]];
 	then
-		return
-	fi
-	if ! [[ -z "$DISPLAY" ]];
-	then
-		# For x11 / xwayland
-		export $(xdotool getactivewindow getwindowgeometry --shell)
+		WIDTH=$(( $(( COLUMNS / 2 )) - 2 ))
+		HEIGHT=$(( LINES - 3 ))
+		FILENAME=$(base64 "${FILES[$Current]}")
+		printf "\e["$(( COLUMNS / 2 ))";"$(( LINES / 2 ))"H"
+		printf "\e]1337;%s%s" \
+		"width = $WIDTH" \
+		"height = auto" \
+		"name = $FILENAME"
 	else
-		# For framebuffer (fbterm / tty etc)
-		fbmode=$(fbset | grep mode | grep x | sed 's/mode //g' | tr -d '"' | sed 's/x/ /g')
-		WIDTH=$(cut -d' ' -f1 <<< "$fbmode")
-		HEIGHT=$(cut -d' ' -f2 <<< "$fbmode")
-	fi
+		# All stole from https://github.com/gokcehan/lf/wiki/Previews
+		w3m_paths=(/usr/{local/,}{lib,libexec,lib64,libexec64}/w3m/w3mi*)
+		read -r w3m _ < <(type -p w3mimgdisplay "${w3m_paths[@]}")
+		if [[ -z "$w3m" ]] || ! [[ -x "$(command -v xdotool)" ]];
+		then
+			return
+		fi
+		if ! [[ -z "$DISPLAY" ]];
+		then
+			# For x11 / xwayland
+			export $(xdotool getactivewindow getwindowgeometry --shell)
+		else
+			# For framebuffer (fbterm / tty etc)
+			fbmode=$(fbset | grep mode | grep x | sed 's/mode //g' | tr -d '"' | sed 's/x/ /g')
+			WIDTH=$(cut -d' ' -f1 <<< "$fbmode")
+			HEIGHT=$(cut -d' ' -f2 <<< "$fbmode")
+		fi
 
-	CELL_W=$(( WIDTH / COLUMNS ))
-	CELL_H=$(( HEIGHT / LINES ))
-	HALF_WIDTH=$(( CELL_W * $(( COLUMNS / 2 )) ))
-	HALF_HEIGHT=$(( $(( CELL_H * LINES )) - $(( CELL_H * 3 )) ))
-	read -r img_width img_height < <("$w3m" <<< "5;${CACHE:-$1}")
-	printf "\e[2;"$(( COLUMNS / 2 ))"H"
-	((img_width > HALF_WIDTH)) && {
-		((img_height=img_height*HALF_WIDTH/img_width))
-		((img_width=HALF_WIDTH))
-	}
+		CELL_W=$(( WIDTH / COLUMNS ))
+		CELL_H=$(( HEIGHT / LINES ))
+		HALF_WIDTH=$(( CELL_W * $(( COLUMNS / 2 )) ))
+		HALF_HEIGHT=$(( $(( CELL_H * LINES )) - $(( CELL_H * 3 )) ))
+		read -r img_width img_height < <("$w3m" <<< "5;${CACHE:-$1}")
+		printf "\e[2;"$(( COLUMNS / 2 ))"H"
+		((img_width > HALF_WIDTH)) && {
+			((img_height=img_height*HALF_WIDTH/img_width))
+			((img_width=HALF_WIDTH))
+		}
 
-	((img_height > HALF_HEIGHT)) && {
-		((img_width=img_width*HALF_HEIGHT/img_height))
-		((img_height=HALF_HEIGHT))
-	}
+		((img_height > HALF_HEIGHT)) && {
+			((img_width=img_width*HALF_HEIGHT/img_height))
+			((img_height=HALF_HEIGHT))
+		}
 
-	X_POS=$(( WIDTH - img_width - CELL_W ))
-	Y_POS=$CELL_H
+		X_POS=$(( WIDTH - img_width - CELL_W ))
+		Y_POS=$CELL_H
 
-	printf '0;1;%s;%s;%s;%s;;;;;%s\n3;\n4\n' \
-		${X_POS:-0} \
-		${Y_POS:-0} \
-		"$img_width" \
-		"$img_height" \
-		"${CACHE:-$1}" | "$w3m" &>/dev/null
+		printf '0;1;%s;%s;%s;%s;;;;;%s\n3;\n4\n' \
+			${X_POS:-0} \
+			${Y_POS:-0} \
+			"$img_width" \
+			"$img_height" \
+			"${CACHE:-$1}" | "$w3m" &>/dev/null
+		fi
 }
 
 LIST_HIGH() {
