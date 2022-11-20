@@ -362,7 +362,7 @@ DRAW_IMAGE() {
 		WIDTH=$(( $(( COLUMNS / 2 )) - 2 ))
 		HEIGHT=$(( LINES - 3 ))
 		FILENAME=$(echo "${FILES[$Current]}" | base64)
-		printf "\e["$(( COLUMNS / 2 ))";"$(( LINES / 2 ))"H"
+		printf "\e["$(( LINES / 2 ))";"$(( COLUMNS / 2 ))"H"
 		printf "\e]1337;%s%s" \
 		"width = $WIDTH" \
 		"height = auto" \
