@@ -32,20 +32,12 @@ FILE_HANDLER() {
 	FILETYPE=$(file "${FILES[$Current]}")
 	if [[ -e "$HANDLE" ]];
 	then
-		if [[ "$filepicker" -eq 1 ]];
-		then
-			case "$FILETYPE" in
-				*directory*) cd "$HANDLE" && clear && LIST_GET ;;
-				*) RESTORE_TERM ;;
-			esac
-		else
-			case "$FILETYPE" in
-				*directory*) cd "$HANDLE" && clear && LIST_GET ;;
-				*script*|*text*|*.md*) $EDITOR "$HANDLE" ;;
-				*image*|*bitmap*) $IMAGE_VIEWER "$HANDLE" ;;
-				*) ERROR 'Dont know how to handle file:'"$PWD/$HANDLE" && CUSTOM_CURRENT ;;
-			esac
-		fi
+		case "$FILETYPE" in
+			*directory*) cd "$HANDLE" && clear && LIST_GET ;;
+			*script*|*text*|*.md*) $EDITOR "$HANDLE" ;;
+			*image*|*bitmap*) $IMAGE_VIEWER "$HANDLE" ;;
+			*) ERROR 'Dont know how to handle file:'"$PWD/$HANDLE" && CUSTOM_CURRENT ;;
+		esac
 	else
 		ERROR "File $HANDLE does not exist!"
 	fi
@@ -57,20 +49,11 @@ FILE_HANDLER() {
 # Main
 #
 
-trap 'RESTORE_TERM' INT TERM
-
-#trap 'echo flmgr exited' EXIT
+#trap 'RESTORE_TERM' INT TERM
 
 trap 'REDRAW' WINCH
 
-if [[ "$*" =~ "-p" ]];
-then
-	filepicker=1
-	startdir="$2"
-else
-	filepicker=0
-	startdir="$1"
-fi
+startdir="$1"
 
 # Programmatically define terminal colors, saves a few lines
 
@@ -122,6 +105,12 @@ RESTORE_TERM() {
 	printf '\e[?1049l'
 	# reset colors
 	printf '\e[0m'
+	exit
+}
+
+RESTORE_PICK() {
+#	printf '\e[?25h\e[?7l\e[?1049l\e[0m' 1>&2
+	echo "$PWD/${FILES[$Current]}"
 	exit
 }
 
@@ -493,12 +482,6 @@ MAIN_LOOP() {
 	done
 }
 
-if [[ "$filepicker" -eq 1 ]];
-then
-	trap "echo $PWD/${FILES[$Current]}" EXIT
-	MAIN_LOOP 1>&2
-else
-	MAIN_LOOP
-fi
+MAIN_LOOP
 
 
