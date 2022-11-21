@@ -32,12 +32,20 @@ FILE_HANDLER() {
 	FILETYPE=$(file "${FILES[$Current]}")
 	if [[ -e "$HANDLE" ]];
 	then
-		case "$FILETYPE" in
-			*directory*) cd "$HANDLE" && clear && LIST_GET ;;
-			*script*|*text*|*.md*) $EDITOR "$HANDLE" ;;
-			*image*|*bitmap*) $IMAGE_VIEWER "$HANDLE" ;;
-			*) ERROR 'Dont know how to handle file:'"$PWD/$HANDLE" && CUSTOM_CURRENT ;;
-		esac
+		if [[ "$filepicker" -eq 1 ]];
+		then
+			case "$FILETYPE" in
+				*directory*) cd "$HANDLE" && clear && LIST_GET ;;
+				*) RESTORE_TERM ;;
+			esac
+		else
+			case "$FILETYPE" in
+				*directory*) cd "$HANDLE" && clear && LIST_GET ;;
+				*script*|*text*|*.md*) $EDITOR "$HANDLE" ;;
+				*image*|*bitmap*) $IMAGE_VIEWER "$HANDLE" ;;
+				*) ERROR 'Dont know how to handle file:'"$PWD/$HANDLE" && CUSTOM_CURRENT ;;
+			esac
+		fi
 	else
 		ERROR "File $HANDLE does not exist!"
 	fi
@@ -55,9 +63,16 @@ trap 'RESTORE_TERM' INT TERM
 
 trap 'REDRAW' WINCH
 
-# Programmatically define terminal colors, saves a few lines
+if [[ "$*" =~ "-p" ]];
+then
+	filepicker=1
+	startdir="$2"
+else
+	filepicker=0
+	startdir="$1"
+fi
 
-startdir="$1"
+# Programmatically define terminal colors, saves a few lines
 
 for code in {0..7}
 do
@@ -73,7 +88,6 @@ REDRAW() {
 	LIST_DRAW $Length $Current
 	BAR_DRAW
 }
-
 
 GET_TERM(){
 	read -r LINES COLUMNS < <(stty size)
@@ -464,15 +478,27 @@ if ! [[ -z "$FROM_DIR" ]];
 then
 	HIGHLIGHT_CURR
 fi
-LIST_DRAW $Length $Current
-BAR_DRAW
-SUB_ACTIONS
 
-case "${FILES[$Current]}" in
-	*/*) DRAW_SUBD ;;
-	*) ;;
-esac
-while [[ $running -eq 1 ]];
-do
-	INPUT
-done
+MAIN_LOOP() {
+	LIST_DRAW $Length $Current
+	BAR_DRAW
+	SUB_ACTIONS
+	case "${FILES[$Current]}" in
+		*/*) DRAW_SUBD ;;
+		*) ;;
+	esac
+	while [[ $running -eq 1 ]];
+	do
+		INPUT
+	done
+}
+
+if [[ "$filepicker" -eq 1 ]];
+then
+	trap "echo $PWD/${FILES[$Current]}" EXIT
+	MAIN_LOOP 1>&2
+else
+	MAIN_LOOP
+fi
+
+
