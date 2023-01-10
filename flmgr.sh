@@ -174,12 +174,19 @@ LIST_DRAW() {
 
 # This is so i dont have to change every occurence of "ls -AF" and things each time i change something
 LS_FUNC() {
+if [[ -z "$1" ]];
+then
+	LS_FILE='.'
+else
+	LS_FILE="$1"
+fi
+
 if [[ "$SHOWHIDDEN" == "true" ]];
 then
 	# The sed statemnet removes the * from the end of filenames of executables, i should add the other (/=>@|) ones but i cba
-	ls -AF $1 | sed -e 's/*$//g' -e 's/\@$//g'
+	ls -AF "$LS_FILE" | sed -e 's/*$//g' -e 's/\@$//g'
 else
-	ls -F $1 | sed -e 's/*$//g' -e 's/\@$//g'
+	ls -F "$LS_FILE" | sed -e 's/*$//g' -e 's/\@$//g'
 fi
 }
 
