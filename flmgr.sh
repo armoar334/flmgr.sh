@@ -71,7 +71,7 @@ draw_list() {
 draw_bar() {
 	printf '\e[%sH\r' "$lines"
 	printf '\e[7m%*s\e[0m' "$columns"
-	printf '\r\e[7m%s%s\e[0m' "($((top_item+1))/${#files[@]})" "$(pwd)"
+	printf '\r\e[7m%s%s\e[0m' "($((top_item+1))/${#files[@]})" "$(pwd)/${files[$top_item]}"
 }
 
 into() {
