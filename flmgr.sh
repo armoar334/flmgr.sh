@@ -87,6 +87,12 @@ into() {
 			then
 				running=false
 				return_file="$(pwd)/${files[$top_item]}"
+			else
+				case "$(file ${files[$top_item]})" in
+					*'text'*) $EDITOR "${files[$top_item]}"
+				esac
+				printf '\e[?25l'
+				stty -echo
 			fi ;;
 	esac
 }
