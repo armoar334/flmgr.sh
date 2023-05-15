@@ -86,7 +86,7 @@ into() {
 			if $picker_mode
 			then
 				running=false
-				return_file="${files[$top_item]}"
+				return_file="$(pwd)/${files[$top_item]}"
 			fi ;;
 	esac
 }
@@ -179,7 +179,7 @@ prev_imag() {
 	true
 }
 
-
+picker_mode=false
 for opt in "$@"
 do
 	case "$opt" in
