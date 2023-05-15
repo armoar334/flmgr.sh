@@ -12,19 +12,14 @@ mv flmgr.sh ~/.local/bin/ # Or other appropriate location in your PATH
 ```
 
 ## Usage
-``flmgr.sh [-p]``
-
-## Optional dependencies
-> w3m: for w3m-img previews  
-> xdotool: to display image in x11 / xwayland terminals  
-> fbset: to display in frambuffer  
+``flmgr.sh ~/Downloads``  
+``nano $(flmgr.sh -p)``
 
 ### Keybinds
 >Up    / k : Scroll up  
 >Down  / j : Scroll down  
 >Right / l : Open file / folder  
 >Left  / h : Go up a directory  
->C/c  : Run a custom command on a file  
 >PgDn : Scroll up a page  
 >PgUp : Scroll down a page  
 >Home : Go to first file in folder  
