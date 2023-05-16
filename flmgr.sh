@@ -6,7 +6,7 @@
 # Show hidden files: true, false
 show_hidden=true
 # Image viewer: chafa, sixel, none
-image_viewer=none
+image_viewer=chafa
 
 
 # Functions
@@ -103,7 +103,10 @@ into() {
 				return_file="$(pwd)/${files[$top_item]}"
 			else
 				case "$(file ${files[$top_item]})" in
-					*'text'*) $EDITOR "${files[$top_item]}"
+					*'text'*) 
+						printf '\e[?1049l'
+						$EDITOR "${files[$top_item]}"
+						printf '\e[?1049h' ;;
 				esac
 				printf '\e[?25l'
 				stty -echo
@@ -132,6 +135,7 @@ search() {
 			$'\e'|'') searching=false ;;
 		esac
 		readarray -t files < <(printf '%s\n' "${old_files[@]}" | grep -i "$search_term" )
+		top_item=0
 		draw_list
 		draw_bar
 	done
@@ -195,8 +199,9 @@ prev_text() {
 	printf '\e[2H'
 	while IFS= read -r line
 	do
-		printf '\e[%sC\e[K' "$(( half_col + 3 ))" 
-		echo "${line::$(( half_col - 4 ))}"
+		printf '\e[%sC\e[K\e[32m' "$(( half_col + 3 ))" 
+		echo -n "${line::$(( half_col - 4 ))}"
+		printf '\e[0m\n'
 	done <<<"$text_prev"
 }
 
