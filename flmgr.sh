@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 
 
-# Settings
+## Settings
 
-# chafa, sixel, none
+# Show hidden files: true, false
+show_hidden=true
+# Image viewer: chafa, sixel, none
 image_viewer=none
+
 
 # Functions
 
@@ -26,7 +29,10 @@ restore_term() {
 }
 
 get_dir() {
-	shopt -s dotglob
+	case "$show_hidden" in
+		true) shopt -s dotglob ;;
+		false) shopt -u dotglob ;;
+	esac
 	temp=(*)
 	files=()
 	# Add / to folders
@@ -219,6 +225,11 @@ setup_term
 top_item=0
 get_dir
 get_term
+
+for opt in "$@"
+do
+	[[ -d "$opt" ]] && cd "$opt"
+done
 
 running=true
 while $running;
