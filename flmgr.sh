@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+
+# Settings
+
+# chafa, sixel, none
+image_viewer=none
+
+# Functions
+
 get_term() {
 	IFS='[;' read -sp $'\e7\e[9999;9999H\e[6n\e8' -d R -rs _ lines columns
 	half_col=$(( columns / 2 ))
@@ -160,6 +168,22 @@ prev_func() {
 	esac
 }
 
+prev_imag() {
+	case "$image_viewer" in
+		'chafa')
+			printf '\e[2H'
+			while IFS= read -r line
+			do
+				printf '\e[%sC%s\n' "$((half_col+3))" "$line"
+			done < <(chafa -f symbols -s $(( half_col - 4 )) "${files[$top_item]}") ;;
+		'sixel')
+			printf '\e[2;%sH' "$((half_col+4))"
+			chafa -f sixel -s $(( half_col - 4 )) "${files[$top_item]}" ;;
+		'none') 
+			true ;;
+	esac
+}
+
 prev_text() {
 	local text_prev=$(head -$(( lines - 2 )) "${files[$top_item]}" | col -x )
 	printf '\e[2H'
@@ -179,10 +203,6 @@ prev_subd() {
 		printf '\e[%sC\e[K' "$(( half_col + 3 ))" 
 		echo "${line::$(( half_col - 4 ))}"
 	done
-}
-
-prev_imag() {
-	true
 }
 
 picker_mode=false
