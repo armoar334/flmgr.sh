@@ -18,6 +18,7 @@ mv flmgr.sh ~/.local/bin/ # Or other appropriate location in your PATH
 ## Features
 Vi-like keybinds  
 Image previews with ``chafa``  
+File picker mode with ``-p``
 
 ### Keybinds
 Up    / k : Scroll up  
