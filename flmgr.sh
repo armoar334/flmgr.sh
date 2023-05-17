@@ -174,7 +174,7 @@ prev_func() {
 	case "${files[$top_item]}" in
 		*'/') prev_subd ;;
 		*.md|*.txt|*.sh) prev_text ;;
-		*.png) prev_imag ;;
+		*.png|*.jpg) prev_imag ;;
 	esac
 }
 

@@ -15,17 +15,17 @@ mv flmgr.sh ~/.local/bin/ # Or other appropriate location in your PATH
 ``flmgr.sh ~/Downloads``  
 ``nano $(flmgr.sh -p)``
 
-### Keybinds
->Up    / k : Scroll up  
->Down  / j : Scroll down  
->Right / l : Open file / folder  
->Left  / h : Go up a directory  
->PgDn : Scroll up a page  
->PgUp : Scroll down a page  
->Home : Go to first file in folder  
->End : Go to last file in folder  
->/ : Search within directory  
-  
+## Features
+Vi-like keybinds  
+Image previews with ``chafa``  
 
-## Hacking
-See ``HACKING.md``
+### Keybinds
+Up    / k : Scroll up  
+Down  / j : Scroll down  
+Right / l : Open file / folder  
+Left  / h : Go up a directory  
+PgDn : Scroll up a page  
+PgUp : Scroll down a page  
+Home : Go to first file in folder  
+End : Go to last file in folder  
+/ : Search within directory  
